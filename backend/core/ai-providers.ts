@@ -20,6 +20,7 @@ export interface ProviderInfo {
   models: ModelInfo[];
   baseUrl: string;
   modelList?: ProviderModelList;
+  availableBaseUrls?: { name: string; url: string }[];
 }
 
 export const AI_PROVIDERS: Record<string, ProviderInfo> = {
@@ -143,6 +144,10 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
       authMethod: 'Bearer',
       responseFormat: 'moonshot',
     },
+    availableBaseUrls: [
+      { name: 'Global', url: 'https://api.moonshot.ai/v1' },
+      { name: 'China', url: 'https://api.moonshot.cn/v1' },
+    ],
     models: [
       {
         name: 'moonshot-v1-8k',
