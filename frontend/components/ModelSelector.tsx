@@ -118,27 +118,6 @@ export function ModelSelector({
     }
   };
 
-  const getProviderBadge = (key: string) => {
-    switch (key) {
-      case 'openai':
-        return <Badge variant="secondary">Popular</Badge>;
-      case 'anthropic':
-        return <Badge variant="secondary">Large Context</Badge>;
-      case 'google':
-        return <Badge variant="secondary">2M Context</Badge>;
-      case 'openrouter':
-        return <Badge variant="secondary">Multi-Model</Badge>;
-      case 'deepseek':
-        return <Badge variant="secondary">Low Cost</Badge>;
-      case 'moonshot':
-        return <Badge variant="secondary">Chinese AI</Badge>;
-      case 'zai':
-        return <Badge variant="secondary">New</Badge>;
-      default:
-        return null;
-    }
-  };
-
   const selectedModelInfo = selectedProvider && selectedModel && providers[selectedProvider] 
     ? providers[selectedProvider].models.find(m => m.name === selectedModel)
     : null;
@@ -163,10 +142,7 @@ export function ModelSelector({
               <SelectContent>
                 {Object.entries(providers).map(([key, provider]) => (
                   <SelectItem key={key} value={key}>
-                    <div className="flex items-center gap-2">
-                      <span>{provider.name}</span>
-                      {getProviderBadge(key)}
-                    </div>
+                    {provider.name}
                   </SelectItem>
                 ))}
               </SelectContent>
