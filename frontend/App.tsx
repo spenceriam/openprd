@@ -33,14 +33,11 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('openprd_theme');
     if (saved === 'light' || saved === 'dark') return saved;
-    // Default to light mode, but respect system preference if available and no choice was saved
-    if (window.matchMedia) {
-      if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-        return 'dark';
-      } else {
-        return 'light';
-      }
+    
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
     }
+    
     return 'light';
   });
 
@@ -84,12 +81,13 @@ function App() {
       </style>
       <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200 relative isolate">
         <AnimatedGridPattern
-          width={30}
-          height={30}
+          width={20}
+          height={20}
           x={-1}
           y={-1}
-          maxOpacity={0.3}
-          duration={2}
+          numSquares={75}
+          maxOpacity={0.4}
+          duration={3}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
             "fill-stone-300 stroke-stone-300 dark:fill-stone-700 dark:stroke-stone-700"

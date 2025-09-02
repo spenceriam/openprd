@@ -1,19 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface AnimatedGridPatternProps {
   width?: number;
   height?: number;
   x?: number;
   y?: number;
-  strokeDasharray?: any;
   numSquares?: number;
   className?: string;
   maxOpacity?: number;
   duration?: number;
-  repeatDelay?: number;
 }
 
 export function AnimatedGridPattern({
@@ -21,27 +19,26 @@ export function AnimatedGridPattern({
   height = 40,
   x = -1,
   y = -1,
-  strokeDasharray = 40,
   numSquares = 50,
   className,
   maxOpacity = 0.5,
   duration = 4,
-  repeatDelay = 0.5,
   ...props
 }: AnimatedGridPatternProps) {
-  const squares = useMemo(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
+  const [squares, setSquares] = useState<[number, number][]>([]);
+
+  useEffect(() => {
     const columns = Math.ceil(window.innerWidth / width);
     const rows = Math.ceil(window.innerHeight / height);
     const allSquares = Array.from({ length: columns * rows }).map((_, i) => [
       i % columns,
       Math.floor(i / columns),
-    ]);
-    return allSquares
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numSquares);
+    ]) as [number, number][];
+    setSquares(
+      allSquares
+        .sort(() => 0.5 - Math.random())
+        .slice(0, numSquares)
+    );
   }, [width, height, numSquares]);
 
   return (
@@ -78,12 +75,9 @@ export function AnimatedGridPattern({
             style={
               {
                 "--max-opacity": maxOpacity,
-                "--duration": `${duration}s`,
-                "--repeat-delay": `${repeatDelay}s`,
                 animation: `fade ${duration}s linear ${
-                  i * 0.05
+                  (i * duration) / numSquares
                 }s infinite alternate`,
-                animationDelay: `${i * 0.05}s`,
               } as React.CSSProperties
             }
           />
