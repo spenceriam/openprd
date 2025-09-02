@@ -40,6 +40,10 @@ export function AnimatedGridPattern({
       .slice(0, numSquares);
   }, [width, height, numSquares]);
 
+  const randomDelays = useMemo(() => {
+    return Array.from({ length: numSquares }).map(() => Math.random() * duration);
+  }, [numSquares, duration]);
+
   return (
     <svg
       aria-hidden="true"
@@ -74,9 +78,8 @@ export function AnimatedGridPattern({
             style={
               {
                 "--max-opacity": maxOpacity,
-                animation: `fade ${duration}s linear ${
-                  Math.random() * duration
-                }s infinite alternate`,
+                animation: `fade ${duration}s linear infinite alternate`,
+                animationDelay: `${randomDelays[i]}s`,
               } as React.CSSProperties
             }
           />
