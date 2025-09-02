@@ -11,6 +11,7 @@ interface GenerateRequest {
   provider: string;
   model: string;
   outputMode: 'ai_agent' | 'human_dev';
+  apiKey?: string;
 }
 
 interface GenerateResponse {
@@ -33,6 +34,15 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     const { userId, input, mode, wizardData, provider, model, outputMode } = req;
     const startTime = Date.now();
     
+    let apiKey = req.apiKey;
+    if (!apiKey) {
+      apiKey = await getDecryptedApiKey(userId, provider);
+    }
+
+    if (!apiKey) {
+      throw APIError.notFound("No API key found for this provider. Please provide one or save it for future use.");
+    }
+    
     // Validate provider and model
     const providerInfo = AI_PROVIDERS[provider];
     if (!providerInfo) {
@@ -42,12 +52,6 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     const modelInfo = getModelInfo(provider, model);
     if (!modelInfo) {
       throw APIError.invalidArgument(`Unsupported model: ${model}`);
-    }
-    
-    // Get decrypted API key
-    const apiKey = await getDecryptedApiKey(userId, provider);
-    if (!apiKey) {
-      throw APIError.notFound("No API key found for this provider");
     }
     
     // Get system prompt

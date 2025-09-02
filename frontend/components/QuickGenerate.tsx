@@ -68,6 +68,16 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
     setIsGenerating(true);
     
     try {
+      if (rememberKey) {
+        setGenerationPhase('Saving API key...');
+        await backend.core.saveApiKey({
+          userId,
+          provider: selectedProvider,
+          apiKey,
+          label: `${selectedProvider} key`
+        });
+      }
+
       setGenerationPhase('Understanding requirements...');
       await new Promise(resolve => setTimeout(resolve, 700));
       setGenerationPhase('Structuring PRD...');
@@ -82,7 +92,8 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
         mode: 'quick',
         provider: selectedProvider,
         model: selectedModel,
-        outputMode: 'ai_agent'
+        outputMode: 'ai_agent',
+        apiKey: apiKey,
       });
 
       onGenerationSuccess(result);

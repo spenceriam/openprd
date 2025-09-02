@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import backend from '~backend/client';
 import type { ModelInfo } from './types';
@@ -14,7 +14,6 @@ interface ProviderData {
 }
 
 interface ModelSelectorProps {
-  userId: string;
   selectedProvider: string;
   selectedModel: string;
   apiKey: string;
@@ -28,7 +27,6 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({
-  userId,
   selectedProvider,
   selectedModel,
   apiKey,
@@ -54,7 +52,7 @@ export function ModelSelector({
   useEffect(() => {
     onModelsFetched(null);
     onModelChange('');
-  }, [selectedProvider]);
+  }, [selectedProvider, onModelsFetched, onModelChange]);
 
   const handleFetchModels = async () => {
     if (!selectedProvider || !apiKey) {
@@ -67,16 +65,7 @@ export function ModelSelector({
     onModelsFetched(null);
 
     try {
-      const saveKeyPromise = backend.core.saveApiKey({
-        userId,
-        provider: selectedProvider,
-        apiKey,
-        label: `${providers[selectedProvider]?.name || 'Default'} Key`
-      });
-
-      const fetchModelsPromise = backend.core.listProviderModels({ provider: selectedProvider, apiKey });
-
-      const [, modelsResponse] = await Promise.all([saveKeyPromise, fetchModelsPromise]);
+      const modelsResponse = await backend.core.listProviderModels({ provider: selectedProvider, apiKey });
       
       onModelsFetched(modelsResponse.models);
       if (modelsResponse.models.length > 0) {
@@ -139,7 +128,7 @@ export function ModelSelector({
               disabled={!selectedProvider || !apiKey || isLoadingModels}
               variant="outline"
             >
-              {isLoadingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {isLoadingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Check'}
             </Button>
           </div>
           {connectionError && <p className="text-sm text-red-600">{connectionError}</p>}
