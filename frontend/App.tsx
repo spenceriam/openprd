@@ -4,6 +4,8 @@ import { QuickGenerate } from './components/QuickGenerate';
 import { ResultsView } from './components/ResultsView';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
+import AnimatedGridPattern from '@/components/magicui/AnimatedGridPattern';
+import { cn } from '@/lib/utils';
 
 export interface GenerationResult {
   prdId: number;
@@ -63,31 +65,52 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200">
-      <Header 
-        theme={theme} 
-        onToggleTheme={toggleTheme}
-        onBackToHome={currentView === 'results' ? handleBackToHome : undefined}
-      />
-      
-      <main className="container mx-auto px-4 py-8 md:py-16">
-        {currentView === 'home' && (
-          <QuickGenerate 
-            userId={userId}
-            onGenerationSuccess={handleGenerationSuccess}
-          />
-        )}
+    <>
+      <style>
+        {`
+          @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: var(--max-opacity); }
+          }
+        `}
+      </style>
+      <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200 relative isolate">
+        <AnimatedGridPattern
+          width={40}
+          height={40}
+          x={-1}
+          y={-1}
+          maxOpacity={0.4}
+          className={cn(
+            "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
+            "fill-stone-300/50 stroke-stone-300/50 dark:fill-stone-700/50 dark:stroke-stone-700/50"
+          )}
+        />
+        <Header 
+          theme={theme} 
+          onToggleTheme={toggleTheme}
+          onBackToHome={currentView === 'results' ? handleBackToHome : undefined}
+        />
         
-        {currentView === 'results' && generationResult && (
-          <ResultsView 
-            result={generationResult}
-            onBackToHome={handleBackToHome}
-          />
-        )}
-      </main>
-      
-      <Toaster />
-    </div>
+        <main className="container mx-auto px-4 py-8 md:py-16 relative z-10">
+          {currentView === 'home' && (
+            <QuickGenerate 
+              userId={userId}
+              onGenerationSuccess={handleGenerationSuccess}
+            />
+          )}
+          
+          {currentView === 'results' && generationResult && (
+            <ResultsView 
+              result={generationResult}
+              onBackToHome={handleBackToHome}
+            />
+          )}
+        </main>
+        
+        <Toaster />
+      </div>
+    </>
   );
 }
 
