@@ -14,6 +14,7 @@ interface ProviderData {
 }
 
 interface ModelSelectorProps {
+  userId: string;
   selectedProvider: string;
   selectedModel: string;
   apiKey: string;
@@ -27,6 +28,7 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({
+  userId,
   selectedProvider,
   selectedModel,
   apiKey,
