@@ -32,6 +32,10 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
       authMethod: 'Bearer',
       responseFormat: 'openai',
     },
+    // This list is curated. It includes generally available OpenAI models that are supported by this application.
+    // The user requested GPT-5 and GPT-4.1 models. These are not yet available through the standard OpenAI API
+    // and may be exclusive to Microsoft Azure's OpenAI service.
+    // For a complete list of models, refer to the OpenAI documentation.
     models: [
       {
         name: 'gpt-4o',
@@ -50,7 +54,13 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
         contextWindow: 128000,
         inputCostPer1k: 0.01,
         outputCostPer1k: 0.03,
-      }
+      },
+      {
+        name: 'gpt-4',
+        contextWindow: 8192,
+        inputCostPer1k: 0.03,
+        outputCostPer1k: 0.06,
+      },
     ]
   },
   anthropic: {
