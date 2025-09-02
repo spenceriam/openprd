@@ -3,11 +3,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import backend from '~backend/client';
+import type { ModelInfo } from './types';
+
+interface ProviderData {
+  name: string;
+  models: ModelInfo[];
+}
 
 interface ModelSelectorProps {
+  userId: string;
   selectedProvider: string;
   selectedModel: string;
   apiKey: string;
@@ -16,20 +23,12 @@ interface ModelSelectorProps {
   onModelChange: (model: string) => void;
   onApiKeyChange: (apiKey: string) => void;
   onRememberKeyChange: (remember: boolean) => void;
-}
-
-interface ProviderData {
-  name: string;
-  models: Array<{
-    name: string;
-    contextWindow: number;
-    inputCostPer1k: number;
-    outputCostPer1k: number;
-    description: string;
-  }>;
+  onModelsFetched: (models: ModelInfo[] | null) => void;
+  fetchedModels: ModelInfo[] | null;
 }
 
 export function ModelSelector({
+  userId,
   selectedProvider,
   selectedModel,
   apiKey,
@@ -37,87 +36,64 @@ export function ModelSelector({
   onProviderChange,
   onModelChange,
   onApiKeyChange,
-  onRememberKeyChange
+  onRememberKeyChange,
+  onModelsFetched,
+  fetchedModels,
 }: ModelSelectorProps) {
   const [providers, setProviders] = useState<Record<string, ProviderData>>({});
   const [showApiKey, setShowApiKey] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [connectionError, setConnectionError] = useState('');
 
   const { toast } = useToast();
 
   useEffect(() => {
-    loadProviders();
+    backend.core.getModels().then(res => setProviders(res.providers));
   }, []);
 
   useEffect(() => {
-    if (selectedProvider && providers[selectedProvider]) {
-      const firstModel = providers[selectedProvider].models[0];
-      if (firstModel && selectedModel !== firstModel.name) {
-        onModelChange(firstModel.name);
-      }
-    }
-  }, [selectedProvider, providers, selectedModel, onModelChange]);
+    onModelsFetched(null);
+    onModelChange('');
+  }, [selectedProvider]);
 
-  const loadProviders = async () => {
-    try {
-      const response = await backend.core.getModels();
-      setProviders(response.providers);
-    } catch (error) {
-      console.error('Failed to load providers:', error);
-    }
-  };
-
-  const testConnection = async () => {
+  const handleFetchModels = async () => {
     if (!selectedProvider || !apiKey) {
-      toast({
-        title: "Missing Configuration",
-        description: "Please select a provider and enter an API key",
-        variant: "destructive"
-      });
+      toast({ title: "Missing Info", description: "Please select a provider and enter an API key.", variant: "destructive" });
       return;
     }
 
-    setConnectionStatus('testing');
+    setIsLoadingModels(true);
     setConnectionError('');
+    onModelsFetched(null);
 
     try {
-      const result = await backend.core.testConnection({
+      const saveKeyPromise = backend.core.saveApiKey({
+        userId,
         provider: selectedProvider,
-        apiKey
+        apiKey,
+        label: `${providers[selectedProvider]?.name || 'Default'} Key`
       });
 
-      if (result.valid) {
-        setConnectionStatus('success');
-        toast({
-          title: "Connection Successful",
-          description: `Connected to ${selectedProvider} successfully`,
-        });
-      } else {
-        setConnectionStatus('error');
-        setConnectionError(result.error || 'Unknown error');
-        toast({
-          title: "Connection Failed",
-          description: result.error || 'Unknown error',
-          variant: "destructive"
-        });
+      const fetchModelsPromise = backend.core.listProviderModels({ provider: selectedProvider, apiKey });
+
+      const [, modelsResponse] = await Promise.all([saveKeyPromise, fetchModelsPromise]);
+      
+      onModelsFetched(modelsResponse.models);
+      if (modelsResponse.models.length > 0) {
+        onModelChange(modelsResponse.models[0].name);
       }
+      toast({ title: "Connected!", description: `Successfully fetched models for ${providers[selectedProvider].name}.` });
     } catch (error) {
-      setConnectionStatus('error');
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       setConnectionError(errorMessage);
-      console.error('Connection test failed:', error);
-      toast({
-        title: "Connection Failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      console.error('Failed to fetch models:', error);
+      toast({ title: "Connection Failed", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsLoadingModels(false);
     }
   };
 
-  const selectedModelInfo = selectedProvider && selectedModel && providers[selectedProvider] 
-    ? providers[selectedProvider].models.find(m => m.name === selectedModel)
-    : null;
+  const selectedModelInfo = fetchedModels?.find(m => m.name === selectedModel) || null;
 
   return (
     <div className="rounded-xl border border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 p-6 space-y-6 backdrop-blur-sm">
@@ -137,32 +113,56 @@ export function ModelSelector({
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">API Key</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                type={showApiKey ? 'text' : 'password'}
+                placeholder={`Enter your ${providers[selectedProvider]?.name || 'API'} key`}
+                value={apiKey}
+                onChange={(e) => onApiKeyChange(e.target.value)}
+                disabled={!selectedProvider}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={() => setShowApiKey(!showApiKey)}
+              >
+                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Button
+              onClick={handleFetchModels}
+              disabled={!selectedProvider || !apiKey || isLoadingModels}
+              variant="outline"
+            >
+              {isLoadingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
+          {connectionError && <p className="text-sm text-red-600">{connectionError}</p>}
+        </div>
+      </div>
 
+      {fetchedModels && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Model</label>
-          <Select 
-            value={selectedModel} 
-            onValueChange={onModelChange}
-            disabled={!selectedProvider}
-          >
+          <Select value={selectedModel} onValueChange={onModelChange} disabled={!fetchedModels}>
             <SelectTrigger>
-              <SelectValue placeholder="Select model" />
+              <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>
-              {selectedProvider && providers[selectedProvider]?.models.map((model) => (
+              {fetchedModels.map((model) => (
                 <SelectItem key={model.name} value={model.name}>
-                  <div className="space-y-1">
-                    <div className="font-medium">{model.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {model.description}
-                    </div>
-                  </div>
+                  {model.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      </div>
+      )}
 
       {selectedModelInfo && (
         <div className="p-3 bg-amber-100/50 dark:bg-stone-800/50 rounded-lg space-y-2 border border-stone-200 dark:border-stone-700">
@@ -178,49 +178,6 @@ export function ModelSelector({
           </div>
         </div>
       )}
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">API Key</label>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              type={showApiKey ? 'text' : 'password'}
-              placeholder={`Enter your ${selectedProvider || 'API'} key`}
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-              onClick={() => setShowApiKey(!showApiKey)}
-            >
-              {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          <Button
-            onClick={testConnection}
-            disabled={!selectedProvider || !apiKey || connectionStatus === 'testing'}
-            variant="outline"
-          >
-            {connectionStatus === 'testing' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : connectionStatus === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-            ) : connectionStatus === 'error' ? (
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            ) : (
-              'Test'
-            )}
-          </Button>
-        </div>
-        
-        {connectionStatus === 'error' && connectionError && (
-          <p className="text-sm text-red-600">{connectionError}</p>
-        )}
-      </div>
 
       <div className="flex items-center space-x-2">
         <Checkbox

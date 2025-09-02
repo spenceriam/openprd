@@ -7,17 +7,12 @@ import { GenerationProgress } from './GenerationProgress';
 import { useToast } from '@/components/ui/use-toast';
 import backend from '~backend/client';
 import type { GenerationResult } from '../App';
+import type { ModelInfo } from './types';
 
 interface QuickGenerateProps {
   userId: string;
   onGenerationSuccess: (result: GenerationResult) => void;
 }
-
-const EXAMPLE_IDEAS = [
-  "A Chrome extension that summarizes long PDFs and allows semantic search.",
-  "A multi-tenant SaaS for automated invoice processing with OCR and QuickBooks integration.",
-  "A community Q&A platform with AI-powered duplicate detection and gamified reputation."
-];
 
 export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProps) {
   const [inputText, setInputText] = useState('');
@@ -28,17 +23,14 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<string>('');
   const [showConfig, setShowConfig] = useState(false);
+  const [fetchedModels, setFetchedModels] = useState<ModelInfo[] | null>(null);
 
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved preferences
     const savedProvider = localStorage.getItem('openprd_provider');
-    const savedModel = localStorage.getItem('openprd_model');
     const savedApiKey = localStorage.getItem('openprd_api_key');
-    
     if (savedProvider) setSelectedProvider(savedProvider);
-    if (savedModel) setSelectedModel(savedModel);
     if (savedApiKey) {
       setApiKey(savedApiKey);
       setRememberKey(true);
@@ -46,15 +38,14 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
   }, []);
 
   useEffect(() => {
-    // Save preferences
-    if (selectedProvider) localStorage.setItem('openprd_provider', selectedProvider);
-    if (selectedModel) localStorage.setItem('openprd_model', selectedModel);
-    if (rememberKey && apiKey) {
+    if (rememberKey) {
+      localStorage.setItem('openprd_provider', selectedProvider);
       localStorage.setItem('openprd_api_key', apiKey);
     } else {
+      localStorage.removeItem('openprd_provider');
       localStorage.removeItem('openprd_api_key');
     }
-  }, [selectedProvider, selectedModel, apiKey, rememberKey]);
+  }, [selectedProvider, apiKey, rememberKey]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -64,47 +55,19 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
 
   const handleGenerate = async () => {
     if (!inputText.trim()) {
-      toast({
-        title: "Input Required",
-        description: "Please enter your product idea",
-        variant: "destructive"
-      });
+      toast({ title: "Input Required", description: "Please enter your product idea.", variant: "destructive" });
       return;
     }
 
-    if (!selectedProvider || !selectedModel || !apiKey) {
+    if (!selectedProvider || !selectedModel || !apiKey || !fetchedModels) {
       setShowConfig(true);
-      toast({
-        title: "Configuration Required", 
-        description: "Please select a provider, model, and enter your API key",
-        variant: "destructive"
-      });
+      toast({ title: "Configuration Required", description: "Please select a provider, enter your API key, and fetch available models.", variant: "destructive" });
       return;
     }
 
     setIsGenerating(true);
     
     try {
-      setGenerationPhase('Testing connection...');
-      const connectionTest = await backend.core.testConnection({
-        provider: selectedProvider,
-        apiKey
-      });
-
-      if (!connectionTest.valid) {
-        throw new Error(connectionTest.error || 'Connection test failed');
-      }
-
-      if (rememberKey) {
-        setGenerationPhase('Saving API key...');
-        await backend.core.saveApiKey({
-          userId,
-          provider: selectedProvider,
-          apiKey,
-          label: `${selectedProvider} key`
-        });
-      }
-
       setGenerationPhase('Understanding requirements...');
       await new Promise(resolve => setTimeout(resolve, 700));
       setGenerationPhase('Structuring PRD...');
@@ -143,7 +106,6 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      {/* Hero Header */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-stone-900 dark:text-white">
           Turn ideas into
@@ -154,9 +116,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
         </p>
       </div>
 
-      {/* Main Interaction Area */}
       <div className="space-y-4">
-        {/* Mode Selection */}
         <div className="flex justify-center">
           <div className="inline-flex items-center rounded-lg bg-stone-200/70 dark:bg-stone-800 p-1">
             <Button variant="ghost" className="w-40 bg-white dark:bg-stone-900 shadow text-stone-800 dark:text-white">
@@ -170,7 +130,6 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
           </div>
         </div>
 
-        {/* Prompt Card */}
         <div className="rounded-xl border border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 p-4 space-y-4 backdrop-blur-sm">
           <Textarea
             placeholder="Describe the application you want to build..."
@@ -201,10 +160,10 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
           </div>
         </div>
 
-        {/* Collapsible AI Configuration */}
         <div className={`grid transition-all duration-500 ease-in-out ${showConfig ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
           <div className="overflow-hidden">
             <ModelSelector
+              userId={userId}
               selectedProvider={selectedProvider}
               selectedModel={selectedModel}
               apiKey={apiKey}
@@ -212,7 +171,9 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
               onProviderChange={setSelectedProvider}
               onModelChange={setSelectedModel}
               onApiKeyChange={setApiKey}
-              onRememberKeyChange={(checked) => setRememberKey(Boolean(checked))}
+              onRememberKeyChange={setRememberKey}
+              fetchedModels={fetchedModels}
+              onModelsFetched={setFetchedModels}
             />
           </div>
         </div>
