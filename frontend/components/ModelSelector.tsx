@@ -40,6 +40,7 @@ export function ModelSelector({
   fetchedModels,
 }: ModelSelectorProps) {
   const [providers, setProviders] = useState<Record<string, ProviderData>>({});
+  const [selectedBaseUrl, setSelectedBaseUrl] = useState<string>('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionError, setConnectionError] = useState('');
@@ -57,7 +58,13 @@ export function ModelSelector({
     onModelChange('');
     setValidationStatus('idle');
     setConnectionError('');
-  }, [selectedProvider, onModelsFetched, onModelChange]);
+    const providerData = providers[selectedProvider];
+    if (providerData?.availableBaseUrls) {
+      setSelectedBaseUrl(providerData.availableBaseUrls[0].url);
+    } else {
+      setSelectedBaseUrl('');
+    }
+  }, [selectedProvider, onModelsFetched, onModelChange, providers]);
 
   const handleFetchModels = useCallback(async () => {
     if (!selectedProvider || !apiKey) {
@@ -69,7 +76,11 @@ export function ModelSelector({
     onModelsFetched(null);
 
     try {
-      const modelsResponse = await backend.core.listProviderModels({ provider: selectedProvider, apiKey });
+      const modelsResponse = await backend.core.listProviderModels({
+        provider: selectedProvider,
+        apiKey,
+        baseUrl: selectedBaseUrl || undefined,
+      });
       
       onModelsFetched(modelsResponse.models);
       if (modelsResponse.models.length > 0) {
@@ -84,13 +95,13 @@ export function ModelSelector({
       console.error('Failed to fetch models:', error);
       toast({ title: "Connection Failed", description: errorMessage, variant: "destructive" });
     }
-  }, [selectedProvider, apiKey, onModelsFetched, onModelChange, providers, toast]);
+  }, [selectedProvider, apiKey, selectedBaseUrl, onModelsFetched, onModelChange, providers, toast]);
 
   useEffect(() => {
     if (debouncedApiKey && selectedProvider) {
       handleFetchModels();
     }
-  }, [debouncedApiKey, selectedProvider, handleFetchModels]);
+  }, [debouncedApiKey, selectedProvider, selectedBaseUrl, handleFetchModels]);
 
   const selectedModelInfo = fetchedModels?.find(m => m.name === selectedModel) || null;
   const filteredModels =
@@ -145,6 +156,24 @@ export function ModelSelector({
           {connectionError && <p className="text-sm text-red-600 mt-1">{connectionError}</p>}
         </div>
       </div>
+
+      {providers[selectedProvider]?.availableBaseUrls && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium">API Endpoint</label>
+          <Select value={selectedBaseUrl} onValueChange={setSelectedBaseUrl}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select endpoint" />
+            </SelectTrigger>
+            <SelectContent>
+              {providers[selectedProvider].availableBaseUrls.map((item) => (
+                <SelectItem key={item.name} value={item.url}>
+                  {item.name} ({item.url})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {fetchedModels && (
         <div className="space-y-2">

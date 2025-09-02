@@ -4,6 +4,7 @@ import { AI_PROVIDERS, ModelInfo } from "./ai-providers";
 interface ListProviderModelsRequest {
   provider: string;
   apiKey: string;
+  baseUrl?: string;
 }
 
 interface ListProviderModelsResponse {
@@ -16,18 +17,20 @@ interface ListProviderModelsResponse {
 // 2. Providers without a model list API (like Z.ai). For these, we validate the API key with a test call and return a hardcoded list of supported models.
 export const listProviderModels = api<ListProviderModelsRequest, ListProviderModelsResponse>(
   { expose: true, method: "POST", path: "/api/provider-models" },
-  async ({ provider, apiKey }) => {
+  async ({ provider, apiKey, baseUrl }) => {
     const providerInfo = AI_PROVIDERS[provider];
     if (!providerInfo) {
       throw APIError.invalidArgument(`Unsupported provider: ${provider}`);
     }
 
+    const activeBaseUrl = baseUrl || providerInfo.baseUrl;
+
     // If a model list endpoint is configured, use it to fetch models dynamically.
     if (providerInfo.modelList) {
       const { endpoint, authMethod, responseFormat, headers: customHeaders } = providerInfo.modelList;
       const url = authMethod === 'google-api-key'
-        ? `${providerInfo.baseUrl}${endpoint}?key=${apiKey}`
-        : `${providerInfo.baseUrl}${endpoint}`;
+        ? `${activeBaseUrl}${endpoint}?key=${apiKey}`
+        : `${activeBaseUrl}${endpoint}`;
 
       const headers: HeadersInit = { ...customHeaders };
       if (authMethod === 'Bearer') {
@@ -95,7 +98,7 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
           ? '/chat/completions'
           : '/chat/completions'; // Default for future similar providers
 
-        const response = await fetch(`${providerInfo.baseUrl}${validationEndpoint}`, {
+        const response = await fetch(`${activeBaseUrl}${validationEndpoint}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
