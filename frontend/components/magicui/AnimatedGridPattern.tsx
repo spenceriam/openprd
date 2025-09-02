@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface AnimatedGridPatternProps {
   width?: number;
@@ -25,20 +25,19 @@ export function AnimatedGridPattern({
   duration = 4,
   ...props
 }: AnimatedGridPatternProps) {
-  const [squares, setSquares] = useState<[number, number][]>([]);
-
-  useEffect(() => {
+  const squares = useMemo(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
     const columns = Math.ceil(window.innerWidth / width);
     const rows = Math.ceil(window.innerHeight / height);
     const allSquares = Array.from({ length: columns * rows }).map((_, i) => [
       i % columns,
       Math.floor(i / columns),
     ]) as [number, number][];
-    setSquares(
-      allSquares
-        .sort(() => 0.5 - Math.random())
-        .slice(0, numSquares)
-    );
+    return allSquares
+      .sort(() => 0.5 - Math.random())
+      .slice(0, numSquares);
   }, [width, height, numSquares]);
 
   return (
@@ -76,7 +75,7 @@ export function AnimatedGridPattern({
               {
                 "--max-opacity": maxOpacity,
                 animation: `fade ${duration}s linear ${
-                  (i * duration) / numSquares
+                  Math.random() * duration
                 }s infinite alternate`,
               } as React.CSSProperties
             }

@@ -32,12 +32,13 @@ function App() {
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('openprd_theme');
-    if (saved === 'light' || saved === 'dark') return saved;
-    
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (saved === 'light' || saved === 'dark') {
+      return saved;
+    }
+    // Respect system preference if available, otherwise default to light mode
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
-    
     return 'light';
   });
 
@@ -85,8 +86,8 @@ function App() {
           height={20}
           x={-1}
           y={-1}
-          numSquares={75}
-          maxOpacity={0.4}
+          numSquares={50}
+          maxOpacity={0.3}
           duration={3}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
