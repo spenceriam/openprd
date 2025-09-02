@@ -87,11 +87,11 @@ function App() {
           x={-1}
           y={-1}
           numSquares={30}
-          maxOpacity={0.1}
+          maxOpacity={0.05}
           duration={5}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
-            "fill-stone-300 stroke-stone-300 dark:fill-stone-700 dark:stroke-stone-700"
+            "fill-stone-300/20 stroke-stone-300/20 dark:fill-stone-700/20 dark:stroke-stone-700/20"
           )}
         />
         <Header 
