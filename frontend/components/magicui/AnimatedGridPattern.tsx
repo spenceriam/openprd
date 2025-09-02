@@ -73,7 +73,7 @@ export function AnimatedGridPattern({
           x={x}
           y={y}
         >
-          <path d={`M.5 ${height}V.5H${width}`} fill="none" />
+          <path d={`M.5 ${height}V.5H${width}`} fill="none" stroke="currentColor" strokeWidth="1" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" strokeWidth={0} fill="url(#grid-pattern)" />
@@ -89,7 +89,7 @@ export function AnimatedGridPattern({
             style={
               {
                 "--max-opacity": maxOpacity,
-                animation: `fade ${duration}s linear infinite alternate`,
+                animation: `fade ${duration}s ease-in-out infinite alternate`,
                 animationDelay: `${Math.random() * duration}s`,
               } as React.CSSProperties
             }

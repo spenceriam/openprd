@@ -82,13 +82,13 @@ function App() {
       </style>
       <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200 relative isolate">
         <AnimatedGridPattern
-          width={20}
-          height={20}
+          width={30}
+          height={30}
           x={-1}
           y={-1}
-          numSquares={50}
-          maxOpacity={0.3}
-          duration={3}
+          numSquares={30}
+          maxOpacity={0.1}
+          duration={5}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
             "fill-stone-300 stroke-stone-300 dark:fill-stone-700 dark:stroke-stone-700"

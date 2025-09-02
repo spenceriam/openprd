@@ -68,7 +68,24 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
             const error = await response.json();
             throw APIError.unauthenticated(error.error?.message || 'Invalid Google API key');
         }
-      } else if (['openrouter', 'deepseek', 'moonshot', 'zai'].includes(provider)) {
+      } else if (provider === 'moonshot') {
+        const response = await fetch(`${providerInfo.baseUrl}/models`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+        });
+        if (!response.ok) {
+            let errorMsg = `Invalid ${providerInfo.name} API key`;
+            try {
+                const error = await response.json();
+                if (error.error?.message) {
+                    errorMsg = error.error.message;
+                }
+            } catch (e) {
+                // ignore if response is not json
+            }
+            throw APIError.unauthenticated(errorMsg);
+        }
+      } else if (['openrouter', 'deepseek', 'zai'].includes(provider)) {
         const headers: HeadersInit = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
         if (provider === 'openrouter') {
             headers['HTTP-Referer'] = 'https://openprd.dev';
