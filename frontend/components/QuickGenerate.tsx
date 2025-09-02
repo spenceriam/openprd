@@ -169,74 +169,74 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
     <div className="mx-auto max-w-5xl space-y-8">
       {/* Hero Header */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium bg-gradient-to-r from-indigo-500/15 via-sky-500/15 to-fuchsia-500/15 text-primary ring-1 ring-border">
-          <Stars className="h-3.5 w-3.5 text-primary" />
+        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-600/15 text-orange-800 ring-1 ring-orange-200">
+          <Stars className="h-3.5 w-3.5 text-orange-800" />
           AI-Powered PRD Generator
         </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-orange-900">
           Turn ideas into
-          <span className="bg-gradient-to-r from-indigo-500 via-sky-500 to-fuchsia-500 bg-clip-text text-transparent"> developer-ready PRDs</span>
+          <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent"> developer-ready PRDs</span>
         </h1>
-        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-base md:text-lg text-orange-700 max-w-2xl mx-auto">
           Paste your idea. Get a structured, token-optimized PRD designed for AI coding agents.
         </p>
 
         {/* Mode Selection (single page; no side panel) */}
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Card className="border-2 border-primary/60 bg-gradient-to-br from-indigo-500/5 via-sky-500/5 to-fuchsia-500/5">
+          <Card className="border-2 border-orange-300 bg-gradient-to-br from-amber-50 to-orange-50">
             <CardHeader className="py-4">
               <div className="flex items-center gap-2">
-                <Wand2 className="h-5 w-5 text-primary" />
-                <CardTitle>Rapid PRD</CardTitle>
-                <Badge>Selected</Badge>
+                <Wand2 className="h-5 w-5 text-orange-800" />
+                <CardTitle className="text-orange-900">Rapid PRD</CardTitle>
+                <Badge className="bg-orange-800 text-orange-50">Selected</Badge>
               </div>
-              <CardDescription>Paste an idea. Generate a full PRD fast.</CardDescription>
+              <CardDescription className="text-orange-700">Paste an idea. Generate a full PRD fast.</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="opacity-80">
+          <Card className="opacity-80 border-orange-200 bg-gradient-to-br from-amber-25 to-orange-25">
             <CardHeader className="py-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                <CardTitle>Walkthrough PRD</CardTitle>
-                <Badge variant="secondary">Coming soon</Badge>
+                <Sparkles className="h-5 w-5 text-orange-600" />
+                <CardTitle className="text-orange-700">Walkthrough PRD</CardTitle>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">Coming soon</Badge>
               </div>
-              <CardDescription>Guided questions for meticulous planning.</CardDescription>
+              <CardDescription className="text-orange-600">Guided questions for meticulous planning.</CardDescription>
             </CardHeader>
           </Card>
         </div>
       </div>
 
       {/* Prompt Box - Main Focus */}
-      <Card className="shadow-sm border-2 border-border/60">
+      <Card className="shadow-lg border-2 border-orange-200 bg-gradient-to-br from-orange-25 to-amber-25">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-orange-900">
+            <Zap className="h-5 w-5 text-orange-800" />
             Describe your product idea
           </CardTitle>
-          <CardDescription>Focus on outcomes, target users, and core features.</CardDescription>
+          <CardDescription className="text-orange-700">Focus on outcomes, target users, and core features.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg bg-background ring-1 ring-border focus-within:ring-2 focus-within:ring-primary/60 transition">
+          <div className="rounded-lg bg-white ring-1 ring-orange-200 focus-within:ring-2 focus-within:ring-orange-400 transition">
             <Textarea
               placeholder="Example: Build a platform that helps indie hackers launch faster by auto-generating PRDs, technical architecture, and test cases. It should support OpenAI, Anthropic, Gemini, and OpenRouter. Include a wizard for refining ideas and a validation assistant to check generated code against requirements..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-[220px] resize-vertical"
+              className="min-h-[220px] resize-vertical border-0 ring-0 focus:ring-0 text-orange-900"
               maxLength={10000}
             />
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between text-sm">
-            <div className="text-muted-foreground">
+            <div className="text-orange-700">
               {inputText.length}/10,000 characters • {tokenEstimate > 0 ? `~${tokenEstimate.toLocaleString()} tokens` : 'token estimate appears as you type'}
               {tokenEstimate > 0 && <> • ~${costEstimate.toFixed(4)} est.</>}
             </div>
 
             <div className="flex gap-2">
               {inputText.length === 0 && (
-                <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
+                <div className="hidden sm:flex items-center gap-2 text-orange-700">
                   Try:
                   {EXAMPLE_IDEAS.slice(0, 2).map((example, idx) => (
                     <Button
@@ -244,9 +244,9 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
                       variant="outline"
                       size="sm"
                       onClick={() => handleExampleClick(example)}
-                      className="h-auto py-1 px-2"
+                      className="h-auto py-1 px-2 border-orange-300 text-orange-800 hover:bg-orange-50"
                     >
-                      {idx === 0 ? 'Habit Tracker' : 'Invoice SaaS'}
+                      {idx === 0 ? 'PDF Extension' : 'Invoice SaaS'}
                     </Button>
                   ))}
                 </div>
@@ -255,6 +255,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
                 onClick={handleGenerate}
                 disabled={!inputText.trim() || !selectedProvider || !selectedModel || !apiKey}
                 size="lg"
+                className="bg-orange-800 hover:bg-orange-900 text-orange-50"
               >
                 {isGenerating ? (
                   <>
@@ -273,7 +274,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
 
           {inputText.length === 0 && (
             <div className="space-y-2 sm:hidden">
-              <p className="text-sm font-medium">Try these examples:</p>
+              <p className="text-sm font-medium text-orange-900">Try these examples:</p>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLE_IDEAS.map((example, index) => (
                   <Button
@@ -281,7 +282,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
                     variant="outline"
                     size="sm"
                     onClick={() => handleExampleClick(example)}
-                    className="text-left h-auto p-3 whitespace-normal"
+                    className="text-left h-auto p-3 whitespace-normal border-orange-300 text-orange-800 hover:bg-orange-50"
                   >
                     {example}
                   </Button>
@@ -290,7 +291,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-orange-600 text-center">
             Press Cmd+Enter to generate quickly
           </p>
         </CardContent>
@@ -299,7 +300,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
       {/* Options (AI Model Configuration underneath prompt) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
+          <h2 className="text-sm font-semibold tracking-wide text-orange-700">
             Generation Options
           </h2>
         </div>

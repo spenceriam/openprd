@@ -67,7 +67,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gradient-to-br from-orange-25 to-amber-50 text-orange-900">
       <Header 
         theme={theme} 
         onToggleTheme={toggleTheme}

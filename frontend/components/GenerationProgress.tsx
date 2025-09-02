@@ -22,21 +22,21 @@ export function GenerationProgress({ phase }: GenerationProgressProps) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card>
+      <Card className="border-orange-200 bg-gradient-to-br from-orange-25 to-amber-25">
         <CardContent className="pt-8 pb-8 text-center space-y-6">
           <div className="flex justify-center">
-            <div className="p-4 bg-primary/10 rounded-full">
-              <CurrentIcon className="h-8 w-8 text-primary animate-spin" />
+            <div className="p-4 bg-orange-100 rounded-full border border-orange-200">
+              <CurrentIcon className="h-8 w-8 text-orange-800 animate-spin" />
             </div>
           </div>
           
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Generating Your PRD</h3>
-            <p className="text-muted-foreground">{phase}</p>
+            <h3 className="text-lg font-semibold text-orange-900">Generating Your PRD</h3>
+            <p className="text-orange-700">{phase}</p>
           </div>
           
           <div className="space-y-4">
-            <Progress value={progress} className="w-full" />
+            <Progress value={progress} className="w-full [&>div]:bg-orange-600" />
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
               {PHASES.map((phaseItem, index) => {
@@ -47,9 +47,9 @@ export function GenerationProgress({ phase }: GenerationProgressProps) {
                   <div
                     key={phaseItem.key}
                     className={`flex items-center gap-1 p-2 rounded ${
-                      isCompleted ? 'text-green-600 bg-green-50 dark:bg-green-950' :
-                      isCurrent ? 'text-primary bg-primary/10' :
-                      'text-muted-foreground'
+                      isCompleted ? 'text-green-700 bg-green-100 border border-green-200' :
+                      isCurrent ? 'text-orange-800 bg-orange-100 border border-orange-200' :
+                      'text-orange-600 bg-orange-50'
                     }`}
                   >
                     <phaseItem.icon className={`h-3 w-3 ${isCurrent ? 'animate-spin' : ''}`} />
@@ -61,7 +61,7 @@ export function GenerationProgress({ phase }: GenerationProgressProps) {
             </div>
           </div>
           
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-orange-600">
             This usually takes 10-30 seconds depending on your input complexity
           </p>
         </CardContent>
