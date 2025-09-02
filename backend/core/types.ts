@@ -9,7 +9,7 @@ export interface User {
 export interface ApiKey {
   id: number;
   user_id: string;
-  provider: 'openai' | 'anthropic' | 'google';
+  provider: 'openai' | 'anthropic' | 'google' | 'openrouter' | 'deepseek' | 'moonshot' | 'zai';
   encrypted_key: string;
   key_hint?: string;
   label?: string;

@@ -62,6 +62,146 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
         description: 'Fast and economical for simpler PRDs'
       }
     ]
+  },
+  google: {
+    name: 'Google',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    authHeader: 'x-goog-api-key',
+    models: [
+      {
+        name: 'gemini-1.5-pro-latest',
+        contextWindow: 2000000,
+        inputCostPer1k: 0.00125,
+        outputCostPer1k: 0.005,
+        description: 'Large context window, excellent for complex PRDs'
+      },
+      {
+        name: 'gemini-1.5-flash-latest',
+        contextWindow: 1000000,
+        inputCostPer1k: 0.000075,
+        outputCostPer1k: 0.0003,
+        description: 'Fast and economical with large context'
+      },
+      {
+        name: 'gemini-2.0-flash-exp',
+        contextWindow: 1000000,
+        inputCostPer1k: 0.000075,
+        outputCostPer1k: 0.0003,
+        description: 'Latest experimental model with improved capabilities'
+      }
+    ]
+  },
+  openrouter: {
+    name: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    authHeader: 'Bearer',
+    models: [
+      {
+        name: 'anthropic/claude-3.5-sonnet',
+        contextWindow: 200000,
+        inputCostPer1k: 0.003,
+        outputCostPer1k: 0.015,
+        description: 'Claude 3.5 Sonnet via OpenRouter'
+      },
+      {
+        name: 'openai/gpt-4o',
+        contextWindow: 128000,
+        inputCostPer1k: 0.005,
+        outputCostPer1k: 0.015,
+        description: 'GPT-4o via OpenRouter'
+      },
+      {
+        name: 'google/gemini-pro-1.5',
+        contextWindow: 2000000,
+        inputCostPer1k: 0.00125,
+        outputCostPer1k: 0.005,
+        description: 'Gemini Pro 1.5 via OpenRouter'
+      },
+      {
+        name: 'meta-llama/llama-3.1-405b-instruct',
+        contextWindow: 128000,
+        inputCostPer1k: 0.003,
+        outputCostPer1k: 0.003,
+        description: 'Llama 3.1 405B, open source powerhouse'
+      }
+    ]
+  },
+  deepseek: {
+    name: 'DeepSeek',
+    baseUrl: 'https://api.deepseek.com/v1',
+    authHeader: 'Bearer',
+    models: [
+      {
+        name: 'deepseek-chat',
+        contextWindow: 128000,
+        inputCostPer1k: 0.00014,
+        outputCostPer1k: 0.00028,
+        description: 'DeepSeek Chat - excellent reasoning at low cost'
+      },
+      {
+        name: 'deepseek-coder',
+        contextWindow: 128000,
+        inputCostPer1k: 0.00014,
+        outputCostPer1k: 0.00028,
+        description: 'DeepSeek Coder - specialized for technical PRDs'
+      }
+    ]
+  },
+  moonshot: {
+    name: 'Moonshot AI',
+    baseUrl: 'https://api.moonshot.cn/v1',
+    authHeader: 'Bearer',
+    models: [
+      {
+        name: 'moonshot-v1-8k',
+        contextWindow: 8000,
+        inputCostPer1k: 0.001,
+        outputCostPer1k: 0.001,
+        description: 'Moonshot 8K context model'
+      },
+      {
+        name: 'moonshot-v1-32k',
+        contextWindow: 32000,
+        inputCostPer1k: 0.002,
+        outputCostPer1k: 0.002,
+        description: 'Moonshot 32K context model'
+      },
+      {
+        name: 'moonshot-v1-128k',
+        contextWindow: 128000,
+        inputCostPer1k: 0.005,
+        outputCostPer1k: 0.005,
+        description: 'Moonshot 128K context model'
+      }
+    ]
+  },
+  zai: {
+    name: 'Z.ai',
+    baseUrl: 'https://api.z.ai/v1',
+    authHeader: 'Bearer',
+    models: [
+      {
+        name: 'z-model-large',
+        contextWindow: 128000,
+        inputCostPer1k: 0.002,
+        outputCostPer1k: 0.006,
+        description: 'Z.ai large model for complex reasoning'
+      },
+      {
+        name: 'z-model-medium',
+        contextWindow: 64000,
+        inputCostPer1k: 0.001,
+        outputCostPer1k: 0.003,
+        description: 'Z.ai medium model, balanced performance'
+      },
+      {
+        name: 'z-model-fast',
+        contextWindow: 32000,
+        inputCostPer1k: 0.0005,
+        outputCostPer1k: 0.0015,
+        description: 'Z.ai fast model for quick generation'
+      }
+    ]
   }
 };
 

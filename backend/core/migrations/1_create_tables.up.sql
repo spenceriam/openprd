@@ -11,7 +11,7 @@ CREATE TABLE users (
 CREATE TABLE api_keys (
     id BIGSERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
-    provider TEXT NOT NULL CHECK(provider IN ('openai', 'anthropic', 'google')),
+    provider TEXT NOT NULL CHECK(provider IN ('openai', 'anthropic', 'google', 'openrouter', 'deepseek', 'moonshot', 'zai')),
     encrypted_key TEXT NOT NULL, -- AES-256-GCM encrypted
     key_hint TEXT, -- Last 4 characters for identification
     label TEXT,
