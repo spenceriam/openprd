@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface AnimatedGridPatternProps {
   width?: number;
@@ -25,24 +25,35 @@ export function AnimatedGridPattern({
   duration = 4,
   ...props
 }: AnimatedGridPatternProps) {
-  const squares = useMemo(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-    const columns = Math.ceil(window.innerWidth / width);
-    const rows = Math.ceil(window.innerHeight / height);
-    const allSquares = Array.from({ length: columns * rows }).map((_, i) => [
-      i % columns,
-      Math.floor(i / columns),
-    ]) as [number, number][];
-    return allSquares
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numSquares);
-  }, [width, height, numSquares]);
+  const [squares, setSquares] = useState<[number, number][]>([]);
 
-  const randomDelays = useMemo(() => {
-    return Array.from({ length: numSquares }).map(() => Math.random() * duration);
-  }, [numSquares, duration]);
+  useEffect(() => {
+    const generateSquares = () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+      const columns = Math.ceil(window.innerWidth / width);
+      const rows = Math.ceil(window.innerHeight / height);
+      const allSquares = Array.from({ length: columns * rows }).map((_, i) => [
+        i % columns,
+        Math.floor(i / columns),
+      ]) as [number, number][];
+      setSquares(
+        allSquares
+          .sort(() => 0.5 - Math.random())
+          .slice(0, numSquares)
+      );
+    };
+
+    // Initial generation
+    generateSquares();
+
+    // Regenerate squares every `duration` seconds to create a continuous, non-repeating animation
+    const intervalId = setInterval(generateSquares, duration * 1000);
+
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [width, height, numSquares, duration]);
 
   return (
     <svg
@@ -79,7 +90,7 @@ export function AnimatedGridPattern({
               {
                 "--max-opacity": maxOpacity,
                 animation: `fade ${duration}s linear infinite alternate`,
-                animationDelay: `${randomDelays[i]}s`,
+                animationDelay: `${Math.random() * duration}s`,
               } as React.CSSProperties
             }
           />
