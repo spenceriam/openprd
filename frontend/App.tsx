@@ -33,7 +33,15 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('openprd_theme');
     if (saved === 'light' || saved === 'dark') return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Default to light mode, but respect system preference if available and no choice was saved
+    if (window.matchMedia) {
+      if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+        return 'dark';
+      } else {
+        return 'light';
+      }
+    }
+    return 'light';
   });
 
   const [currentView, setCurrentView] = useState<'home' | 'results'>('home');
@@ -76,14 +84,15 @@ function App() {
       </style>
       <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200 relative isolate">
         <AnimatedGridPattern
-          width={40}
-          height={40}
+          width={30}
+          height={30}
           x={-1}
           y={-1}
-          maxOpacity={0.4}
+          maxOpacity={0.3}
+          duration={2}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
-            "fill-stone-300/50 stroke-stone-300/50 dark:fill-stone-700/50 dark:stroke-stone-700/50"
+            "fill-stone-300 stroke-stone-300 dark:fill-stone-700 dark:stroke-stone-700"
           )}
         />
         <Header 
