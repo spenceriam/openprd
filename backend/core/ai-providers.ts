@@ -148,7 +148,7 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
     ]
   },
   moonshot: {
-    name: 'Moonshot AI',
+    name: 'Moonshot.ai',
     baseUrl: 'https://api.moonshot.cn/v1',
     authHeader: 'Bearer',
     models: [
