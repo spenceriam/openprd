@@ -70,96 +70,90 @@ export function ResultsView({ result, onBackToHome }: ResultsViewProps) {
   };
 
   const formatMarkdown = (content: string) => {
-    // Simple markdown to HTML conversion for display
     return content
-      .replace(/^### (.+$)/gm, '<h3 class="text-lg font-semibold mt-4 mb-2 text-orange-900">$1</h3>')
-      .replace(/^## (.+$)/gm, '<h2 class="text-xl font-semibold mt-6 mb-3 text-orange-900">$1</h2>')
-      .replace(/^# (.+$)/gm, '<h1 class="text-2xl font-bold mt-8 mb-4 text-orange-900">$1</h1>')
-      .replace(/^\- (.+$)/gm, '<li class="ml-4 text-orange-800">• $1</li>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-orange-900">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="text-orange-800">$1</em>')
-      .replace(/`(.+?)`/g, '<code class="bg-orange-100 text-orange-900 px-1 py-0.5 rounded text-sm border border-orange-200">$1</code>')
-      .replace(/\n/g, '<br>');
+      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
+      .replace(/^\> (.*$)/gim, '<blockquote class="mt-6 border-l-2 pl-6 italic">$1</blockquote>')
+      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/\*(.*)\*/gim, '<em>$1</em>')
+      .replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
+      .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2' class='text-orange-600 hover:underline'>$1</a>")
+      .replace(/`(.*?)`/gim, '<code class="bg-amber-100/50 text-orange-700 dark:bg-stone-800 dark:text-amber-400 px-1 py-0.5 rounded text-sm border border-stone-200 dark:border-stone-700">$1</code>')
+      .replace(/^\s*[-*+] (.*)/gim, '<li class="ml-4 my-1 list-disc">$1</li>')
+      .replace(/\n/g, '<br />');
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header with stats */}
-      <Card className="border-orange-200 bg-gradient-to-br from-orange-25 to-amber-25">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-orange-900">PRD Generated Successfully</CardTitle>
-              <div className="flex items-center gap-4 mt-2 text-sm text-orange-700">
-                <span>{result.tokens.toLocaleString()} tokens</span>
-                <span>${result.cost.toFixed(4)} cost</span>
-                <span>{result.sections.length} sections</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCopyAll} variant="outline" size="sm" className="border-orange-300 text-orange-800 hover:bg-orange-50">
-                <Copy className="h-4 w-4 mr-2" />
-                Copy All
-              </Button>
-              <Button onClick={handleDownload} variant="outline" size="sm" className="border-orange-300 text-orange-800 hover:bg-orange-50">
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-              <Button onClick={onBackToHome} variant="outline" size="sm" className="border-orange-300 text-orange-800 hover:bg-orange-50">
-                Generate New
-              </Button>
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="rounded-xl border border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle>PRD Generated Successfully</CardTitle>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-stone-600 dark:text-stone-400">
+              <span>{result.tokens.toLocaleString()} tokens</span>
+              <span>${result.cost.toFixed(4)} cost</span>
+              <span>{result.sections.length} sections</span>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+          
+          <div className="flex items-center gap-2">
+            <Button onClick={handleCopyAll} variant="outline" size="sm">
+              <Copy className="h-4 w-4 mr-2" />
+              Copy All
+            </Button>
+            <Button onClick={handleDownload} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+            <Button onClick={onBackToHome} variant="outline" size="sm">
+              Generate New
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      {/* Sections */}
       <div className="space-y-4">
-        {result.sections.map((section, index) => (
-          <Card key={section.id} className="group border-orange-200 bg-white hover:bg-orange-25/50 transition-colors">
+        {result.sections.map((section) => (
+          <Card key={section.id} className="group bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 shadow-sm hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-base capitalize text-orange-900">
+                  <CardTitle className="text-base capitalize">
                     {section.type.replace(/_/g, ' ')}
                   </CardTitle>
-                  <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                  <Badge variant="secondary" className="text-xs bg-amber-100/60 text-orange-700 dark:bg-stone-800 dark:text-amber-400">
                     {section.tokens} tokens
                   </Badge>
                 </div>
                 
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="ghost"
                     onClick={() => handleCopySection(section.content, section.id)}
-                    className="h-8 w-8 p-0 text-orange-600 hover:text-orange-800 hover:bg-orange-100"
+                    className="h-8 w-8"
                   >
                     {copiedSection === section.id ? (
-                      <CheckCircle2 className="h-3 w-3 text-green-600" />
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-3 w-3" />
+                      <Copy className="h-4 w-4" />
                     )}
                   </Button>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-orange-600 hover:text-orange-800 hover:bg-orange-100"
-                      >
-                        <MoreHorizontal className="h-3 w-3" />
+                      <Button size="icon" variant="ghost" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="border-orange-200">
-                      <DropdownMenuItem className="text-orange-800 hover:bg-orange-50">
-                        <RefreshCw className="h-3 w-3 mr-2" />
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <RefreshCw className="h-4 w-4 mr-2" />
                         Regenerate
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-orange-800 hover:bg-orange-50">
-                        <Edit className="h-3 w-3 mr-2" />
+                      <DropdownMenuItem>
+                        <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -170,30 +164,13 @@ export function ResultsView({ result, onBackToHome }: ResultsViewProps) {
             
             <CardContent className="pt-0">
               <div 
-                className="prose prose-sm max-w-none text-orange-800"
+                className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-stone-800 dark:prose-headings:text-stone-200"
                 dangerouslySetInnerHTML={{ __html: formatMarkdown(section.content) }}
               />
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Footer actions */}
-      <Card className="border-orange-200 bg-gradient-to-br from-orange-25 to-amber-25">
-        <CardContent className="pt-6 text-center space-y-4">
-          <p className="text-sm text-orange-700">
-            Need to make changes? You can regenerate individual sections or create a new PRD.
-          </p>
-          <div className="flex justify-center gap-2">
-            <Button onClick={onBackToHome} variant="outline" className="border-orange-300 text-orange-800 hover:bg-orange-50">
-              Generate New PRD
-            </Button>
-            <Button onClick={handleCopyAll} className="bg-orange-800 hover:bg-orange-900 text-orange-50">
-              Copy Full PRD
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

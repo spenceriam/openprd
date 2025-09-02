@@ -41,11 +41,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('openprd_theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.className = theme;
   }, [theme]);
 
   const handleGenerationSuccess = (result: GenerationResult) => {
@@ -67,14 +63,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-25 to-amber-50 text-orange-900">
+    <div className="min-h-screen bg-amber-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200">
       <Header 
         theme={theme} 
         onToggleTheme={toggleTheme}
         onBackToHome={currentView === 'results' ? handleBackToHome : undefined}
       />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 md:py-16">
         {currentView === 'home' && (
           <QuickGenerate 
             userId={userId}
