@@ -139,16 +139,19 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
   moonshot: {
     name: 'Moonshot.ai',
     baseUrl: 'https://api.moonshot.ai/v1',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'Bearer',
-      responseFormat: 'moonshot',
-    },
-    availableBaseUrls: [
-      { name: 'Global', url: 'https://api.moonshot.ai/v1' },
-      { name: 'China', url: 'https://api.moonshot.cn/v1' },
-    ],
     models: [
+      {
+        name: 'kimi-k2-0711-preview',
+        contextWindow: 131072,
+        inputCostPer1k: 0.0006,
+        outputCostPer1k: 0.0025,
+      },
+      {
+        name: 'kimi-k2-turbo-preview',
+        contextWindow: 131072,
+        inputCostPer1k: 0.0024,
+        outputCostPer1k: 0.01,
+      },
       {
         name: 'moonshot-v1-8k',
         contextWindow: 8000,
