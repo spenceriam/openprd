@@ -174,34 +174,6 @@ export const AI_PROVIDERS: Record<string, ProviderInfo> = {
         description: 'Moonshot 128K context model'
       }
     ]
-  },
-  zai: {
-    name: 'Z.ai',
-    baseUrl: 'https://api.z.ai/v1',
-    authHeader: 'Bearer',
-    models: [
-      {
-        name: 'z-model-large',
-        contextWindow: 128000,
-        inputCostPer1k: 0.002,
-        outputCostPer1k: 0.006,
-        description: 'Z.ai large model for complex reasoning'
-      },
-      {
-        name: 'z-model-medium',
-        contextWindow: 64000,
-        inputCostPer1k: 0.001,
-        outputCostPer1k: 0.003,
-        description: 'Z.ai medium model, balanced performance'
-      },
-      {
-        name: 'z-model-fast',
-        contextWindow: 32000,
-        inputCostPer1k: 0.0005,
-        outputCostPer1k: 0.0015,
-        description: 'Z.ai fast model for quick generation'
-      }
-    ]
   }
 };
 

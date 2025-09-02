@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import backend from '~backend/client';
 import type { ModelInfo } from './types';
+import { useDebounce } from '../hooks/useDebounce';
 
 interface ProviderData {
   name: string;
@@ -40,8 +41,9 @@ export function ModelSelector({
 }: ModelSelectorProps) {
   const [providers, setProviders] = useState<Record<string, ProviderData>>({});
   const [showApiKey, setShowApiKey] = useState(false);
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionError, setConnectionError] = useState('');
+  const debouncedApiKey = useDebounce(apiKey, 1000);
 
   const { toast } = useToast();
 
@@ -52,15 +54,16 @@ export function ModelSelector({
   useEffect(() => {
     onModelsFetched(null);
     onModelChange('');
+    setValidationStatus('idle');
+    setConnectionError('');
   }, [selectedProvider, onModelsFetched, onModelChange]);
 
-  const handleFetchModels = async () => {
+  const handleFetchModels = useCallback(async () => {
     if (!selectedProvider || !apiKey) {
-      toast({ title: "Missing Info", description: "Please select a provider and enter an API key.", variant: "destructive" });
       return;
     }
 
-    setIsLoadingModels(true);
+    setValidationStatus('loading');
     setConnectionError('');
     onModelsFetched(null);
 
@@ -71,16 +74,22 @@ export function ModelSelector({
       if (modelsResponse.models.length > 0) {
         onModelChange(modelsResponse.models[0].name);
       }
+      setValidationStatus('success');
       toast({ title: "Connected!", description: `Successfully fetched models for ${providers[selectedProvider].name}.` });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       setConnectionError(errorMessage);
+      setValidationStatus('error');
       console.error('Failed to fetch models:', error);
       toast({ title: "Connection Failed", description: errorMessage, variant: "destructive" });
-    } finally {
-      setIsLoadingModels(false);
     }
-  };
+  }, [selectedProvider, apiKey, onModelsFetched, onModelChange, providers, toast]);
+
+  useEffect(() => {
+    if (debouncedApiKey && selectedProvider) {
+      handleFetchModels();
+    }
+  }, [debouncedApiKey, selectedProvider, handleFetchModels]);
 
   const selectedModelInfo = fetchedModels?.find(m => m.name === selectedModel) || null;
 
@@ -104,34 +113,31 @@ export function ModelSelector({
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">API Key</label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                type={showApiKey ? 'text' : 'password'}
-                placeholder={`Enter your ${providers[selectedProvider]?.name || 'API'} key`}
-                value={apiKey}
-                onChange={(e) => onApiKeyChange(e.target.value)}
-                disabled={!selectedProvider}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => setShowApiKey(!showApiKey)}
-              >
-                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+              {validationStatus === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-stone-400" />}
+              {validationStatus === 'success' && <CheckCircle className="h-4 w-4 text-green-600" />}
+              {validationStatus === 'error' && <XCircle className="h-4 w-4 text-red-600" />}
             </div>
+            <Input
+              type={showApiKey ? 'text' : 'password'}
+              placeholder={`Enter your ${providers[selectedProvider]?.name || 'API'} key`}
+              value={apiKey}
+              onChange={(e) => onApiKeyChange(e.target.value)}
+              disabled={!selectedProvider}
+              className="pl-10"
+            />
             <Button
-              onClick={handleFetchModels}
-              disabled={!selectedProvider || !apiKey || isLoadingModels}
-              variant="outline"
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+              onClick={() => setShowApiKey(!showApiKey)}
             >
-              {isLoadingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Check'}
+              {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
-          {connectionError && <p className="text-sm text-red-600">{connectionError}</p>}
+          {connectionError && <p className="text-sm text-red-600 mt-1">{connectionError}</p>}
         </div>
       </div>
 

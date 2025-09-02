@@ -19,8 +19,8 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
       throw APIError.invalidArgument(`Unsupported provider: ${provider}`);
     }
 
-    // For OpenAI, we can fetch the models list dynamically to ensure the user has access.
-    if (provider === 'openai') {
+    // For OpenAI & Moonshot, we can fetch the models list dynamically to ensure the user has access.
+    if (provider === 'openai' || provider === 'moonshot') {
       try {
         const response = await fetch(`${providerInfo.baseUrl}/models`, {
           headers: { 'Authorization': `Bearer ${apiKey}` },
@@ -28,7 +28,7 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
 
         if (!response.ok) {
           const error = await response.json();
-          throw APIError.unauthenticated(error.error?.message || 'Invalid OpenAI API key');
+          throw APIError.unauthenticated(error.error?.message || `Invalid ${providerInfo.name} API key`);
         }
 
         const data = await response.json();
@@ -37,7 +37,7 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
         const userModels = providerInfo.models.filter(m => availableModels.includes(m.name));
 
         if (userModels.length === 0) {
-          throw APIError.notFound("No supported OpenAI models found for your API key. Ensure you have access to GPT-4 models.");
+          throw APIError.notFound(`No supported ${providerInfo.name} models found for your API key.`);
         }
         return { models: userModels };
       } catch (error) {
@@ -68,24 +68,7 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
             const error = await response.json();
             throw APIError.unauthenticated(error.error?.message || 'Invalid Google API key');
         }
-      } else if (provider === 'moonshot') {
-        const response = await fetch(`${providerInfo.baseUrl}/models`, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-        });
-        if (!response.ok) {
-            let errorMsg = `Invalid ${providerInfo.name} API key`;
-            try {
-                const error = await response.json();
-                if (error.error?.message) {
-                    errorMsg = error.error.message;
-                }
-            } catch (e) {
-                // ignore if response is not json
-            }
-            throw APIError.unauthenticated(errorMsg);
-        }
-      } else if (['openrouter', 'deepseek', 'zai'].includes(provider)) {
+      } else if (['openrouter', 'deepseek'].includes(provider)) {
         const headers: HeadersInit = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
         if (provider === 'openrouter') {
             headers['HTTP-Referer'] = 'https://openprd.dev';
