@@ -3,190 +3,175 @@ export interface ModelInfo {
   contextWindow: number;
   inputCostPer1k: number;
   outputCostPer1k: number;
-}
-
-export type AuthMethod = 'Bearer' | 'x-api-key' | 'google-api-key';
-
-export interface ProviderModelList {
-  endpoint: string;
-  authMethod: AuthMethod;
-  responseFormat: 'openai' | 'google' | 'anthropic' | 'openrouter' | 'deepseek' | 'moonshot';
-  // Optional headers for specific providers
-  headers?: Record<string, string>;
+  description: string;
 }
 
 export interface ProviderInfo {
   name: string;
   models: ModelInfo[];
   baseUrl: string;
-  modelList?: ProviderModelList;
-  availableBaseUrls?: { name: string; url: string }[];
+  authHeader: string;
 }
 
 export const AI_PROVIDERS: Record<string, ProviderInfo> = {
   openai: {
     name: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'Bearer',
-      responseFormat: 'openai',
-    },
+    authHeader: 'Bearer',
     models: [
       {
         name: 'gpt-4o',
         contextWindow: 128000,
         inputCostPer1k: 0.005,
         outputCostPer1k: 0.015,
+        description: 'Most capable model, best for complex PRDs'
       },
       {
         name: 'gpt-4o-mini',
         contextWindow: 128000,
         inputCostPer1k: 0.00015,
         outputCostPer1k: 0.0006,
+        description: 'Fast and cost-effective for most PRDs'
       },
       {
         name: 'gpt-4-turbo',
         contextWindow: 128000,
         inputCostPer1k: 0.01,
         outputCostPer1k: 0.03,
+        description: 'Previous generation, still very capable'
       }
     ]
   },
   anthropic: {
     name: 'Anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'x-api-key',
-      responseFormat: 'anthropic',
-      headers: { 'anthropic-version': '2023-06-01' },
-    },
+    authHeader: 'x-api-key',
     models: [
       {
         name: 'claude-3-5-sonnet-20241022',
         contextWindow: 200000,
         inputCostPer1k: 0.003,
         outputCostPer1k: 0.015,
+        description: 'Excellent for structured thinking and PRDs'
       },
       {
         name: 'claude-3-haiku-20240307',
         contextWindow: 200000,
         inputCostPer1k: 0.00025,
         outputCostPer1k: 0.00125,
+        description: 'Fast and economical for simpler PRDs'
       }
     ]
   },
   google: {
     name: 'Google',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'google-api-key',
-      responseFormat: 'google',
-    },
+    authHeader: 'x-goog-api-key',
     models: [
       {
         name: 'gemini-1.5-pro-latest',
         contextWindow: 2000000,
         inputCostPer1k: 0.00125,
         outputCostPer1k: 0.005,
+        description: 'Large context window, excellent for complex PRDs'
       },
       {
         name: 'gemini-1.5-flash-latest',
         contextWindow: 1000000,
         inputCostPer1k: 0.000075,
         outputCostPer1k: 0.0003,
+        description: 'Fast and economical with large context'
+      },
+      {
+        name: 'gemini-2.0-flash-exp',
+        contextWindow: 1000000,
+        inputCostPer1k: 0.000075,
+        outputCostPer1k: 0.0003,
+        description: 'Latest experimental model with improved capabilities'
       }
     ]
   },
   openrouter: {
     name: 'OpenRouter',
     baseUrl: 'https://openrouter.ai/api/v1',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'Bearer',
-      responseFormat: 'openrouter',
-    },
+    authHeader: 'Bearer',
     models: [
-      // OpenRouter provides pricing and context, so we can leave this empty
-      // and populate it entirely from the API response.
+      {
+        name: 'anthropic/claude-3.5-sonnet',
+        contextWindow: 200000,
+        inputCostPer1k: 0.003,
+        outputCostPer1k: 0.015,
+        description: 'Claude 3.5 Sonnet via OpenRouter'
+      },
+      {
+        name: 'openai/gpt-4o',
+        contextWindow: 128000,
+        inputCostPer1k: 0.005,
+        outputCostPer1k: 0.015,
+        description: 'GPT-4o via OpenRouter'
+      },
+      {
+        name: 'google/gemini-pro-1.5',
+        contextWindow: 2000000,
+        inputCostPer1k: 0.00125,
+        outputCostPer1k: 0.005,
+        description: 'Gemini Pro 1.5 via OpenRouter'
+      },
+      {
+        name: 'meta-llama/llama-3.1-405b-instruct',
+        contextWindow: 128000,
+        inputCostPer1k: 0.003,
+        outputCostPer1k: 0.003,
+        description: 'Llama 3.1 405B, open source powerhouse'
+      }
     ]
   },
   deepseek: {
     name: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com/v1',
-    modelList: {
-      endpoint: '/models',
-      authMethod: 'Bearer',
-      responseFormat: 'deepseek',
-    },
+    authHeader: 'Bearer',
     models: [
       {
         name: 'deepseek-chat',
         contextWindow: 128000,
         inputCostPer1k: 0.00014,
         outputCostPer1k: 0.00028,
+        description: 'DeepSeek Chat - excellent reasoning at low cost'
       },
       {
         name: 'deepseek-coder',
         contextWindow: 128000,
         inputCostPer1k: 0.00014,
         outputCostPer1k: 0.00028,
+        description: 'DeepSeek Coder - specialized for technical PRDs'
       }
     ]
   },
   moonshot: {
     name: 'Moonshot.ai',
-    baseUrl: 'https://api.moonshot.ai/v1',
+    baseUrl: 'https://api.moonshot.cn/v1',
+    authHeader: 'Bearer',
     models: [
-      {
-        name: 'kimi-k2-0711-preview',
-        contextWindow: 131072,
-        inputCostPer1k: 0.0006,
-        outputCostPer1k: 0.0025,
-      },
-      {
-        name: 'kimi-k2-turbo-preview',
-        contextWindow: 131072,
-        inputCostPer1k: 0.0024,
-        outputCostPer1k: 0.01,
-      },
       {
         name: 'moonshot-v1-8k',
         contextWindow: 8000,
         inputCostPer1k: 0.001,
         outputCostPer1k: 0.001,
+        description: 'Moonshot 8K context model'
       },
       {
         name: 'moonshot-v1-32k',
         contextWindow: 32000,
         inputCostPer1k: 0.002,
         outputCostPer1k: 0.002,
+        description: 'Moonshot 32K context model'
       },
       {
         name: 'moonshot-v1-128k',
         contextWindow: 128000,
         inputCostPer1k: 0.005,
         outputCostPer1k: 0.005,
-      }
-    ]
-  },
-  zai: {
-    name: 'Z.ai',
-    baseUrl: 'https://api.z.ai/api/paas/v4',
-    models: [
-      {
-        name: 'glm-4.5',
-        contextWindow: 128000,
-        inputCostPer1k: 0.0006,
-        outputCostPer1k: 0.0022,
-      },
-      {
-        name: 'glm-4-32b-0414-128k',
-        contextWindow: 128000,
-        inputCostPer1k: 0.0001,
-        outputCostPer1k: 0.0001,
+        description: 'Moonshot 128K context model'
       }
     ]
   }

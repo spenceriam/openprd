@@ -3,4 +3,5 @@ export interface ModelInfo {
   contextWindow: number;
   inputCostPer1k: number;
   outputCostPer1k: number;
+  description: string;
 }
