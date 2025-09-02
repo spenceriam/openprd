@@ -43,6 +43,7 @@ export function ModelSelector({
   const [showApiKey, setShowApiKey] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionError, setConnectionError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const debouncedApiKey = useDebounce(apiKey, 1000);
 
   const { toast } = useToast();
@@ -92,6 +93,10 @@ export function ModelSelector({
   }, [debouncedApiKey, selectedProvider, handleFetchModels]);
 
   const selectedModelInfo = fetchedModels?.find(m => m.name === selectedModel) || null;
+  const filteredModels =
+    fetchedModels?.filter(model =>
+      model.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   return (
     <div className="rounded-xl border border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 p-6 space-y-6 backdrop-blur-sm">
@@ -144,12 +149,20 @@ export function ModelSelector({
       {fetchedModels && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Model</label>
+          {selectedProvider === 'openrouter' && (
+            <Input
+              placeholder="Search models..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mb-2"
+            />
+          )}
           <Select value={selectedModel} onValueChange={onModelChange} disabled={!fetchedModels}>
             <SelectTrigger>
               <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>
-              {fetchedModels.map((model) => (
+              {filteredModels.map((model) => (
                 <SelectItem key={model.name} value={model.name}>
                   {model.name}
                 </SelectItem>
