@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Sparkles, Loader2 } from 'lucide-react';
+import { Zap, Sparkles, Loader2, Wand2, Stars } from 'lucide-react';
 import { ModelSelector } from './ModelSelector';
 import { GenerationProgress } from './GenerationProgress';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,9 +16,9 @@ interface QuickGenerateProps {
 }
 
 const EXAMPLE_IDEAS = [
-  "A habit tracking app that gamifies daily routines with RPG-style progression",
-  "A collaborative code review tool with AI-powered suggestions",
-  "A personal finance dashboard that automatically categorizes expenses"
+  "Build a Chrome extension that summarizes long PDFs with citations and allows semantic search across highlights.",
+  "Create a multi-tenant SaaS for automated invoice processing with OCR, approval workflows, and QuickBooks integrations.",
+  "Launch a community Q&A platform with AI-powered duplicate detection, suggested answers, and gamified reputation."
 ];
 
 export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProps) {
@@ -65,8 +65,8 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
       const estimatedTokens = Math.ceil(inputText.length / 4) + 3000; // Input + expected output
       setTokenEstimate(estimatedTokens);
       
-      // TODO: Get actual model pricing
-      const estimatedCost = (estimatedTokens / 1000) * 0.01; // Rough estimate
+      // Rough estimate; exact pricing depends on chosen model
+      const estimatedCost = (estimatedTokens / 1000) * 0.01;
       setCostEstimate(estimatedCost);
     } else {
       setTokenEstimate(0);
@@ -128,18 +128,15 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
         });
       }
 
-      // Generate PRD
+      // Simulate phases for UX
       setGenerationPhase('Understanding requirements...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise(resolve => setTimeout(resolve, 700));
       setGenerationPhase('Structuring PRD...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise(resolve => setTimeout(resolve, 700));
       setGenerationPhase('Optimizing for AI...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise(resolve => setTimeout(resolve, 700));
       setGenerationPhase('Finalizing...');
-      
+
       const result = await backend.core.generate({
         userId,
         input: inputText,
@@ -169,87 +166,113 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Hero Section */}
+    <div className="mx-auto max-w-5xl space-y-8">
+      {/* Hero Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Transform Ideas into 
-          <span className="text-primary"> AI-Ready PRDs</span>
+        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium bg-gradient-to-r from-indigo-500/15 via-sky-500/15 to-fuchsia-500/15 text-primary ring-1 ring-border">
+          <Stars className="h-3.5 w-3.5 text-primary" />
+          AI-Powered PRD Generator
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+          Turn ideas into
+          <span className="bg-gradient-to-r from-indigo-500 via-sky-500 to-fuchsia-500 bg-clip-text text-transparent"> developer-ready PRDs</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Generate professional Product Requirements Documents optimized for AI coding agents. 
-          Bring your own API key for complete control.
+        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+          Paste your idea. Get a structured, token-optimized PRD designed for AI coding agents.
         </p>
+
+        {/* Mode Selection (single page; no side panel) */}
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Card className="border-2 border-primary/60 bg-gradient-to-br from-indigo-500/5 via-sky-500/5 to-fuchsia-500/5">
+            <CardHeader className="py-4">
+              <div className="flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-primary" />
+                <CardTitle>Rapid PRD</CardTitle>
+                <Badge>Selected</Badge>
+              </div>
+              <CardDescription>Paste an idea. Generate a full PRD fast.</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="opacity-80">
+            <CardHeader className="py-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                <CardTitle>Walkthrough PRD</CardTitle>
+                <Badge variant="secondary">Coming soon</Badge>
+              </div>
+              <CardDescription>Guided questions for meticulous planning.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
 
-      {/* Mode Selection */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="border-2 border-primary bg-primary/5">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <CardTitle>Quick Generate</CardTitle>
-              <Badge>Active</Badge>
-            </div>
-            <CardDescription>
-              Paste your idea and get a complete PRD in seconds
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="opacity-60">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              <CardTitle>Guided Wizard</CardTitle>
-              <Badge variant="secondary">Coming Soon</Badge>
-            </div>
-            <CardDescription>
-              Answer targeted questions for refined PRDs
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Configuration */}
-      <ModelSelector
-        selectedProvider={selectedProvider}
-        selectedModel={selectedModel}
-        apiKey={apiKey}
-        rememberKey={rememberKey}
-        onProviderChange={setSelectedProvider}
-        onModelChange={setSelectedModel}
-        onApiKeyChange={setApiKey}
-        onRememberKeyChange={setRememberKey}
-      />
-
-      {/* Input Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Describe Your Product Idea</CardTitle>
-          <CardDescription>
-            Be as detailed as possible. The more context you provide, the better your PRD will be.
-          </CardDescription>
+      {/* Prompt Box - Main Focus */}
+      <Card className="shadow-sm border-2 border-border/60">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            Describe your product idea
+          </CardTitle>
+          <CardDescription>Focus on outcomes, target users, and core features.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea
-            placeholder="Example: A habit tracking app that gamifies daily routines with RPG-style progression, including character leveling, equipment unlocks, and social challenges..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="min-h-[120px]"
-            maxLength={10000}
-          />
-          
-          <div className="flex justify-between items-center text-sm text-muted-foreground">
-            <span>{inputText.length}/10,000 characters</span>
-            {tokenEstimate > 0 && (
-              <span>~{tokenEstimate.toLocaleString()} tokens • ${costEstimate.toFixed(4)}</span>
-            )}
+          <div className="rounded-lg bg-background ring-1 ring-border focus-within:ring-2 focus-within:ring-primary/60 transition">
+            <Textarea
+              placeholder="Example: Build a platform that helps indie hackers launch faster by auto-generating PRDs, technical architecture, and test cases. It should support OpenAI, Anthropic, Gemini, and OpenRouter. Include a wizard for refining ideas and a validation assistant to check generated code against requirements..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="min-h-[220px] resize-vertical"
+              maxLength={10000}
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between text-sm">
+            <div className="text-muted-foreground">
+              {inputText.length}/10,000 characters • {tokenEstimate > 0 ? `~${tokenEstimate.toLocaleString()} tokens` : 'token estimate appears as you type'}
+              {tokenEstimate > 0 && <> • ~${costEstimate.toFixed(4)} est.</>}
+            </div>
+
+            <div className="flex gap-2">
+              {inputText.length === 0 && (
+                <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
+                  Try:
+                  {EXAMPLE_IDEAS.slice(0, 2).map((example, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExampleClick(example)}
+                      className="h-auto py-1 px-2"
+                    >
+                      {idx === 0 ? 'Habit Tracker' : 'Invoice SaaS'}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <Button
+                onClick={handleGenerate}
+                disabled={!inputText.trim() || !selectedProvider || !selectedModel || !apiKey}
+                size="lg"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating PRD...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-4 w-4 mr-2" />
+                    Generate PRD
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
 
           {inputText.length === 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2 sm:hidden">
               <p className="text-sm font-medium">Try these examples:</p>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLE_IDEAS.map((example, index) => (
@@ -267,30 +290,30 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
             </div>
           )}
 
-          <Button
-            onClick={handleGenerate}
-            disabled={!inputText.trim() || !selectedProvider || !selectedModel || !apiKey}
-            className="w-full"
-            size="lg"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating PRD...
-              </>
-            ) : (
-              <>
-                <Zap className="h-4 w-4 mr-2" />
-                Generate PRD
-              </>
-            )}
-          </Button>
-          
           <p className="text-xs text-muted-foreground text-center">
             Press Cmd+Enter to generate quickly
           </p>
         </CardContent>
       </Card>
+
+      {/* Options (AI Model Configuration underneath prompt) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
+            Generation Options
+          </h2>
+        </div>
+        <ModelSelector
+          selectedProvider={selectedProvider}
+          selectedModel={selectedModel}
+          apiKey={apiKey}
+          rememberKey={rememberKey}
+          onProviderChange={setSelectedProvider}
+          onModelChange={setSelectedModel}
+          onApiKeyChange={setApiKey}
+          onRememberKeyChange={setRememberKey}
+        />
+      </div>
     </div>
   );
 }
