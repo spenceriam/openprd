@@ -83,7 +83,7 @@ export function AnimatedGridPattern({
     <svg
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 h-full w-full opacity-70",
+        "pointer-events-none absolute inset-0 h-full w-full",
         className,
       )}
       {...props}
