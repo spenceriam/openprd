@@ -208,63 +208,33 @@ async function callAI(provider: string, model: string, apiKey: string, systemPro
       content: data.choices[0].message.content
     };
   }
-  
-  if (provider === 'anthropic') {
-    const response = await fetch(`${providerInfo.baseUrl}/messages`, {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 4000,
-        temperature: 0.7,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userInput }
-        ]
-      })
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Anthropic API error: ${error}`);
-    }
-    
-    const data = await response.json();
-    return {
-      content: data.content[0].text
-    };
-  }
 
-  if (provider === 'google') {
-    const response = await fetch(`${providerInfo.baseUrl}/models/${model}:generateContent`, {
+  if (provider === 'deepseek') {
+    const response = await fetch(`${providerInfo.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        'x-goog-api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        contents: [
-          { parts: [{ text: `${systemPrompt}\n\n${userInput}` }] }
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userInput }
         ],
-        generationConfig: {
-          maxOutputTokens: 4000,
-          temperature: 0.7
-        }
+        temperature: 0.7,
+        max_tokens: 4000
       })
     });
     
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Google API error: ${error}`);
+      throw new Error(`DeepSeek API error: ${error}`);
     }
     
     const data = await response.json();
     return {
-      content: data.candidates[0].content.parts[0].text
+      content: data.choices[0].message.content
     };
   }
 
@@ -291,36 +261,6 @@ async function callAI(provider: string, model: string, apiKey: string, systemPro
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`OpenRouter API error: ${error}`);
-    }
-    
-    const data = await response.json();
-    return {
-      content: data.choices[0].message.content
-    };
-  }
-
-  if (provider === 'deepseek' || provider === 'moonshot' || provider === 'zai') {
-    // These providers use OpenAI-compatible chat completions format
-    const response = await fetch(`${providerInfo.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userInput }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000
-      })
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`${providerInfo.name} API error: ${error}`);
     }
     
     const data = await response.json();
