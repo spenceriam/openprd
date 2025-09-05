@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Zap, Sparkles, Loader2, Wand2, Settings, ChevronUp } from 'lucide-react';
+import { Bot, Sparkles, Loader2, Wand2, Settings, ChevronUp } from 'lucide-react';
 import { ModelSelector } from './ModelSelector';
 import { GenerationProgress } from './GenerationProgress';
 import { useToast } from '@/components/ui/use-toast';
@@ -253,7 +253,7 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
               onClick={() => setShowConfig(!showConfig)}
             >
               <Settings className="h-4 w-4 mr-2" />
-              AI Configuration
+              AI API/System Instructions
               <ChevronUp className={`ml-2 h-4 w-4 transition-transform duration-300 ${showConfig ? '' : 'rotate-180'}`} />
             </Button>
             <Button
@@ -262,8 +262,8 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
               size="lg"
               className="bg-stone-800 hover:bg-stone-950 text-white dark:bg-white dark:text-black dark:hover:bg-stone-200 shadow-lg"
             >
-              <Zap className="h-4 w-4 mr-2" />
-              Generate
+              <Bot className="h-4 w-4 mr-2" />
+              Create PRD
             </Button>
           </div>
         </div>
