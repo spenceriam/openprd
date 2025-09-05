@@ -12,6 +12,7 @@ interface GenerateRequest {
   model: string;
   outputMode: 'ai_agent' | 'human_dev';
   apiKey?: string;
+  systemInstructions?: string;
 }
 
 interface GenerateResponse {
@@ -31,7 +32,7 @@ interface GenerateResponse {
 export const generate = api<GenerateRequest, GenerateResponse>(
   { expose: true, method: "POST", path: "/api/generate" },
   async (req) => {
-    const { userId, input, mode, wizardData, provider, model, outputMode } = req;
+    const { userId, input, mode, wizardData, provider, model, outputMode, systemInstructions } = req;
     const startTime = Date.now();
     
     let apiKey = req.apiKey;
@@ -54,15 +55,20 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       throw APIError.invalidArgument(`Unsupported model: ${model}`);
     }
     
-    // Get system prompt
-    const systemPrompt = await db.queryRow<{ prompt_content: string }>`
-      SELECT prompt_content FROM system_prompts 
-      WHERE prompt_key = 'main' AND is_active = 1
-      ORDER BY created_at DESC LIMIT 1
-    `;
-    
-    if (!systemPrompt) {
-      throw APIError.internal("System prompt not found");
+    // Use custom system instructions if provided, otherwise get from database
+    let finalSystemPrompt = systemInstructions;
+    if (!finalSystemPrompt) {
+      const systemPrompt = await db.queryRow<{ prompt_content: string }>`
+        SELECT prompt_content FROM system_prompts 
+        WHERE prompt_key = 'main' AND is_active = 1
+        ORDER BY created_at DESC LIMIT 1
+      `;
+      
+      if (!systemPrompt) {
+        throw APIError.internal("System prompt not found");
+      }
+      
+      finalSystemPrompt = systemPrompt.prompt_content;
     }
     
     // Prepare input for AI
@@ -72,7 +78,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     }
     
     // Estimate tokens for input
-    const inputTokens = estimateTokens(systemPrompt.prompt_content + finalInput);
+    const inputTokens = estimateTokens(finalSystemPrompt + finalInput);
     
     // Check context window
     if (inputTokens > modelInfo.contextWindow * 0.6) {
@@ -81,7 +87,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     
     try {
       // Call AI API
-      const aiResponse = await callAI(provider, model, apiKey, systemPrompt.prompt_content, finalInput);
+      const aiResponse = await callAI(provider, model, apiKey, finalSystemPrompt, finalInput);
       const outputTokens = estimateTokens(aiResponse.content);
       const totalTokens = inputTokens + outputTokens;
       
