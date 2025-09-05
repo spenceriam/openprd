@@ -75,8 +75,10 @@ function App() {
       <style>
         {`
           @keyframes fade {
-            from { opacity: 0; }
-            to { opacity: var(--max-opacity); }
+            0% { opacity: 0; }
+            10% { opacity: var(--max-opacity); }
+            90% { opacity: var(--max-opacity); }
+            100% { opacity: 0; }
           }
         `}
       </style>
@@ -91,7 +93,7 @@ function App() {
           duration={5}
           className={cn(
             "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
-            "stroke-stone-300/30 dark:stroke-stone-700/20",
+            "stroke-stone-300/30 dark:stroke-stone-700/30",
             "fill-stone-500 dark:fill-stone-400"
           )}
         />

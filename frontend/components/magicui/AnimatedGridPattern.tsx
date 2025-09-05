@@ -53,7 +53,7 @@ export function AnimatedGridPattern({
         x: pos.x,
         y: pos.y,
         animationDelay: Math.random() * duration,
-        id: `${pos.x}-${pos.y}-${Date.now()}-${index}`
+        id: `${pos.x}-${pos.y}-${index}`
       }));
       
       setSquares(newSquares);
@@ -123,7 +123,7 @@ export function AnimatedGridPattern({
             style={
               {
                 "--max-opacity": maxOpacity,
-                animation: `fade ${duration}s ease-in-out infinite alternate`,
+                animation: `fade ${duration}s linear infinite`,
                 animationDelay: `${square.animationDelay}s`,
               } as React.CSSProperties
             }
