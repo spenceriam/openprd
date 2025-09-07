@@ -52,15 +52,30 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       throw APIError.notFound("No API key found for this provider. Please provide one or save it for future use.");
     }
     
-    // Validate provider and model
+    // Validate provider
     const providerInfo = AI_PROVIDERS[provider];
     if (!providerInfo) {
       throw APIError.invalidArgument(`Unsupported provider: ${provider}`);
     }
     
-    const modelInfo = getModelInfo(provider, model);
-    if (!modelInfo) {
-      throw APIError.invalidArgument(`Unsupported model: ${model}`);
+    // For OpenRouter, we validate the model by making the API call directly
+    // For other providers, we validate against our static list
+    let modelInfo = null;
+    if (provider === 'openrouter') {
+      // For OpenRouter, we'll use a default model info structure
+      // The actual pricing and context will be handled by the OpenRouter API
+      modelInfo = {
+        name: model,
+        contextWindow: 128000, // Default, will be overridden by actual API response
+        inputCostPer1k: 0.001, // Default, actual pricing handled by OpenRouter
+        outputCostPer1k: 0.001,
+        description: 'OpenRouter model'
+      };
+    } else {
+      modelInfo = getModelInfo(provider, model);
+      if (!modelInfo) {
+        throw APIError.invalidArgument(`Unsupported model: ${model}`);
+      }
     }
     
     // Use custom system instructions if provided, otherwise get from database
@@ -88,8 +103,8 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     // Estimate tokens for input
     const inputTokens = estimateTokens(finalSystemPrompt + finalInput);
     
-    // Check context window
-    if (inputTokens > modelInfo.contextWindow * 0.6) {
+    // Check context window (only for non-OpenRouter providers)
+    if (provider !== 'openrouter' && inputTokens > modelInfo.contextWindow * 0.6) {
       throw APIError.invalidArgument("Input too long for selected model context window");
     }
     
