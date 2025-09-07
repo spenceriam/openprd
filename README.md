@@ -2,6 +2,8 @@
 
 Generate developer-ready Product Requirements Documents (PRDs) optimized for AI coding agents like Cursor, Claude Code, and Warp.dev.
 
+LIVE DEMO: https://staging-openprd-app-ee92.frontend.encr.app
+
 ## Features
 
 - **AI-Optimized PRDs**: Token-efficient markdown designed for agentic coding
