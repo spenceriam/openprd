@@ -219,8 +219,8 @@ export function QuickGenerate({ userId, onGenerationSuccess }: QuickGenerateProp
           Turn ideas into
           <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent"> developer-ready PRDs</span>
         </h1>
-        <p className="text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
-          <span className="text-orange-600">Paste your idea.</span> Get a structured, token-optimized PRD designed for AI coding agents.
+        <p className="text-lg text-stone-800 dark:text-stone-100 max-w-2xl mx-auto">
+          Paste your idea. Get a structured, token-optimized PRD designed for AI coding agents.
         </p>
       </div>
 
