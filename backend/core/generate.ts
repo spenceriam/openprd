@@ -349,8 +349,20 @@ async function callAI(provider: string, model: string, apiKey: string, systemPro
     });
     
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`OpenRouter API error: ${error}`);
+      const errorText = await response.text();
+      let errorMessage = `OpenRouter API error: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error && errorData.error.message) {
+          errorMessage = `OpenRouter API error: ${errorData.error.message}`;
+        }
+      } catch (parseError) {
+        // If we can't parse the error, use the status text
+        errorMessage += ` - ${errorText}`;
+      }
+      
+      throw new Error(errorMessage);
     }
     
     const data = await response.json();

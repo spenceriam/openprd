@@ -290,13 +290,17 @@ export function ModelSelector({
                         >
                           <div className="flex flex-col w-full">
                             <div className="font-medium">{model.name}</div>
-                            {model.description && (
+                            {model.description && model.description !== model.name && (
                               <div className="text-xs text-stone-600 dark:text-stone-400 truncate">
                                 {model.description}
                               </div>
                             )}
                             <div className="text-xs text-stone-500 dark:text-stone-500">
-                              ${model.inputCostPer1k.toFixed(4)}/${model.outputCostPer1k.toFixed(4)} per 1K tokens
+                              {model.inputCostPer1k > 0 || model.outputCostPer1k > 0 ? (
+                                `$${model.inputCostPer1k.toFixed(4)}/$${model.outputCostPer1k.toFixed(4)} per 1K tokens`
+                              ) : (
+                                'Pricing not available'
+                              )}
                             </div>
                           </div>
                         </CommandItem>
@@ -332,10 +336,14 @@ export function ModelSelector({
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">Cost (Input/Output)</span>
             <span className="text-sm text-stone-600 dark:text-stone-300">
-              ${selectedModelInfo.inputCostPer1k.toFixed(4)} / ${selectedModelInfo.outputCostPer1k.toFixed(4)} per 1K tokens
+              {selectedModelInfo.inputCostPer1k > 0 || selectedModelInfo.outputCostPer1k > 0 ? (
+                `$${selectedModelInfo.inputCostPer1k.toFixed(4)} / $${selectedModelInfo.outputCostPer1k.toFixed(4)} per 1K tokens`
+              ) : (
+                'Pricing not available'
+              )}
             </span>
           </div>
-          {selectedModelInfo.description && (
+          {selectedModelInfo.description && selectedModelInfo.description !== selectedModelInfo.name && (
             <div className="pt-1">
               <span className="text-sm font-medium">Description</span>
               <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">{selectedModelInfo.description}</p>

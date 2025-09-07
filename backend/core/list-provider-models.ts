@@ -32,7 +32,7 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
       headers['x-api-key'] = apiKey;
     }
 
-    // Add OpenRouter specific headers
+    // Add OpenRouter specific headers as per their documentation
     if (provider === 'openrouter') {
       headers['HTTP-Referer'] = 'https://openprd.dev';
       headers['X-Title'] = 'OpenPRD';
@@ -50,13 +50,35 @@ export const listProviderModels = api<ListProviderModelsRequest, ListProviderMod
 
       // Handle OpenRouter's dynamic model response
       if (responseFormat === 'openrouter') {
-        const models: ModelInfo[] = data.data.map((model: any) => ({
-          name: model.id,
-          contextWindow: model.context_length || 0,
-          inputCostPer1k: parseFloat(model.pricing.prompt) * 1000 || 0,
-          outputCostPer1k: parseFloat(model.pricing.completion) * 1000 || 0,
-          description: model.description || model.id
-        }));
+        const models: ModelInfo[] = data.data
+          .filter((model: any) => {
+            // Filter out models that don't have basic required information
+            return model.id && model.context_length;
+          })
+          .map((model: any) => {
+            // Handle pricing safely - some models may not have pricing info
+            let inputCost = 0;
+            let outputCost = 0;
+            
+            if (model.pricing && model.pricing.prompt && model.pricing.completion) {
+              // OpenRouter pricing is per token, we need per 1k tokens
+              inputCost = parseFloat(model.pricing.prompt) * 1000;
+              outputCost = parseFloat(model.pricing.completion) * 1000;
+            }
+            
+            return {
+              name: model.id,
+              contextWindow: model.context_length || 4096,
+              inputCostPer1k: inputCost,
+              outputCostPer1k: outputCost,
+              description: model.description || model.name || model.id
+            };
+          })
+          .sort((a: ModelInfo, b: ModelInfo) => {
+            // Sort by name for better UX
+            return a.name.localeCompare(b.name);
+          });
+        
         return { models };
       }
 
