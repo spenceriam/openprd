@@ -106,14 +106,14 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       // Extract title from generated content
       const title = extractTitle(aiResponse.content);
       
-      // Save PRD to database
+      // Save PRD to database using REAL type for cost
       const prdResult = await db.queryRow<{ id: number }>`
         INSERT INTO prds (
           user_id, title, input_text, input_mode, wizard_responses, 
           generated_content, output_mode, model_provider, model_name,
           total_tokens, generation_time_ms, cost_usd, created_at, updated_at
         ) VALUES (
-          ${userId}, ${title}, ${input}, ${mode}, ${JSON.stringify(wizardData)},
+          ${userId}, ${title}, ${input}, ${mode}, ${JSON.stringify(wizardData || {})},
           ${aiResponse.content}, ${outputMode}, ${provider}, ${model},
           ${totalTokens}, ${Date.now() - startTime}, ${totalCost}, 
           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
@@ -150,7 +150,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
         }
       }
       
-      // Log generation (user is guaranteed to exist now)
+      // Log generation (user is guaranteed to exist now) using REAL type for cost
       await db.exec`
         INSERT INTO generation_logs (
           user_id, prd_id, action, model_provider, model_name,
@@ -170,7 +170,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       };
       
     } catch (error) {
-      // Log error (user is guaranteed to exist now)
+      // Log error (user is guaranteed to exist now) using REAL type for cost
       await db.exec`
         INSERT INTO generation_logs (
           user_id, action, model_provider, model_name,
