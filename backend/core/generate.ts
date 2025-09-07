@@ -58,7 +58,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       throw APIError.invalidArgument(`Unsupported provider: ${provider}`);
     }
     
-    // For OpenRouter, we validate the model by making the API call directly
+    // For OpenRouter, we don't validate against our static list since they have dynamic models
     // For other providers, we validate against our static list
     let modelInfo = null;
     if (provider === 'openrouter') {
