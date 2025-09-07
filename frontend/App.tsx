@@ -97,6 +97,10 @@ function App() {
             "fill-stone-500 dark:fill-stone-400"
           )}
         />
+        
+        {/* Glassmorphism overlay to reduce animation distraction */}
+        <div className="absolute inset-0 bg-amber-50/60 dark:bg-stone-950/60 backdrop-blur-[0.5px] z-[1]" />
+        
         <Header 
           theme={theme} 
           onToggleTheme={toggleTheme}
