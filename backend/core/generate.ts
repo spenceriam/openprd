@@ -35,6 +35,19 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     const { userId, input, mode, wizardData, provider, model, outputMode, systemInstructions } = req;
     const startTime = Date.now();
     
+    // Ensure user exists before proceeding
+    await db.exec`
+      INSERT OR IGNORE INTO users (id, created_at, last_seen) 
+      VALUES (${userId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `;
+    
+    // Update last_seen for existing users
+    await db.exec`
+      UPDATE users 
+      SET last_seen = CURRENT_TIMESTAMP 
+      WHERE id = ${userId}
+    `;
+    
     let apiKey = req.apiKey;
     if (!apiKey) {
       apiKey = await getDecryptedApiKey(userId, provider);
@@ -143,7 +156,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
         }
       }
       
-      // Log generation
+      // Log generation (user is guaranteed to exist now)
       await db.exec`
         INSERT INTO generation_logs (
           user_id, prd_id, action, model_provider, model_name,
@@ -163,7 +176,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       };
       
     } catch (error) {
-      // Log error
+      // Log error (user is guaranteed to exist now)
       await db.exec`
         INSERT INTO generation_logs (
           user_id, action, model_provider, model_name,
