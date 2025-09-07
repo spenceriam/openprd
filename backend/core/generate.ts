@@ -37,15 +37,9 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     
     // Ensure user exists before proceeding
     await db.exec`
-      INSERT OR IGNORE INTO users (id, created_at, last_seen) 
+      INSERT INTO users (id, created_at, last_seen) 
       VALUES (${userId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `;
-    
-    // Update last_seen for existing users
-    await db.exec`
-      UPDATE users 
-      SET last_seen = CURRENT_TIMESTAMP 
-      WHERE id = ${userId}
+      ON CONFLICT(id) DO UPDATE SET last_seen = CURRENT_TIMESTAMP
     `;
     
     let apiKey = req.apiKey;
@@ -73,7 +67,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     if (!finalSystemPrompt) {
       const systemPrompt = await db.queryRow<{ prompt_content: string }>`
         SELECT prompt_content FROM system_prompts 
-        WHERE prompt_key = 'main' AND is_active = 1
+        WHERE prompt_key = 'main' AND is_active = true
         ORDER BY created_at DESC LIMIT 1
       `;
       

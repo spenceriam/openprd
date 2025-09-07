@@ -44,14 +44,15 @@ export const saveApiKey = api<SaveApiKeyRequest, SaveApiKeyResponse>(
     
     // First ensure user exists
     await db.exec`
-      INSERT OR IGNORE INTO users (id, created_at, last_seen) 
+      INSERT INTO users (id, created_at, last_seen) 
       VALUES (${userId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON CONFLICT(id) DO UPDATE SET last_seen = CURRENT_TIMESTAMP
     `;
     
     // Save encrypted API key
     const result = await db.queryRow<{ id: number }>`
       INSERT INTO api_keys (user_id, provider, encrypted_key, key_hint, label, is_active, created_at)
-      VALUES (${userId}, ${provider}, ${encryptedKey}, ${keyHint}, ${label}, 1, CURRENT_TIMESTAMP)
+      VALUES (${userId}, ${provider}, ${encryptedKey}, ${keyHint}, ${label}, true, CURRENT_TIMESTAMP)
       RETURNING id
     `;
     
@@ -83,7 +84,7 @@ export const getApiKeys = api<GetApiKeysRequest, GetApiKeysResponse>(
     }>`
       SELECT id, provider, key_hint, label, is_active, created_at, last_used
       FROM api_keys 
-      WHERE user_id = ${userId} AND is_active = 1
+      WHERE user_id = ${userId} AND is_active = true
       ORDER BY created_at DESC
     `;
     
@@ -93,7 +94,7 @@ export const getApiKeys = api<GetApiKeysRequest, GetApiKeysResponse>(
         provider: key.provider,
         keyHint: key.key_hint || '',
         label: key.label,
-        isActive: key.is_active === 1,
+        isActive: key.is_active,
         createdAt: key.created_at,
         lastUsed: key.last_used
       }))
@@ -108,7 +109,7 @@ export async function getDecryptedApiKey(userId: string, provider: string): Prom
   }>`
     SELECT encrypted_key
     FROM api_keys 
-    WHERE user_id = ${userId} AND provider = ${provider} AND is_active = 1
+    WHERE user_id = ${userId} AND provider = ${provider} AND is_active = true
     ORDER BY created_at DESC
     LIMIT 1
   `;
