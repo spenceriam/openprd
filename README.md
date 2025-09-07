@@ -57,7 +57,7 @@ encore run
 
 ## Acknowledgements
 
-Huge love to [www.charprd.com](https://www.charprd.com) - this project is inspired by their excellent work. OpenPRD is not meant to replace CharPRD but rather provide a DIY, bring-your-own-key alternative for developers who want more control over their AI providers and costs.
+Huge love to [www.chatprd.com](https://www.chatprd.com) - this project is inspired by their excellent work. OpenPRD is not meant to replace ChatPRD but rather provide a DIY, bring-your-own-key alternative for developers who want more control over their AI providers and costs.
 
 ## License
 
