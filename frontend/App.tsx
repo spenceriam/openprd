@@ -12,6 +12,7 @@ export interface GenerationResult {
   content: string;
   tokens: number;
   cost: number;
+  filename: string;
   sections: Array<{
     id: number;
     type: string;

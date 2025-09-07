@@ -20,6 +20,7 @@ interface GenerateResponse {
   content: string;
   tokens: number;
   cost: number;
+  filename: string;
   sections: Array<{
     id: number;
     type: string;
@@ -106,6 +107,9 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       // Extract title from generated content
       const title = extractTitle(aiResponse.content);
       
+      // Generate filename based on title and input
+      const filename = await generateFilename(title, input, provider, model, apiKey);
+      
       // Save PRD to database using REAL type for cost
       const prdResult = await db.queryRow<{ id: number }>`
         INSERT INTO prds (
@@ -166,6 +170,7 @@ export const generate = api<GenerateRequest, GenerateResponse>(
         content: aiResponse.content,
         tokens: totalTokens,
         cost: totalCost,
+        filename,
         sections: sectionResults
       };
       
@@ -189,6 +194,63 @@ export const generate = api<GenerateRequest, GenerateResponse>(
     }
   }
 );
+
+async function generateFilename(title: string, input: string, provider: string, model: string, apiKey: string): Promise<string> {
+  // Check if user provided a specific name in the input
+  const nameMatch = input.match(/(?:name|title|call|called)\s*(?:it|this|the\s+(?:app|application|project|product))?\s*["\']?([a-zA-Z0-9\s-_]+)["\']?/i);
+  
+  if (nameMatch && nameMatch[1]) {
+    const userProvidedName = nameMatch[1].trim().toLowerCase().replace(/\s+/g, '-');
+    return `${userProvidedName}-prd.md`;
+  }
+  
+  // If no name provided, generate a codename using AI
+  const codenamPrompt = `Generate a single, creative codename for a project based on this description: "${input.substring(0, 200)}". 
+
+Rules:
+- Return ONLY the codename, nothing else
+- 1-2 words maximum
+- Use animals, space objects, or tech terms
+- Make it memorable and relevant
+- Examples: falcon, nebula, atlas, phoenix
+- Lowercase, no spaces or special characters`;
+
+  try {
+    const providerInfo = AI_PROVIDERS[provider];
+    
+    const response = await fetch(`${providerInfo.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        ...(provider === 'openrouter' && {
+          'HTTP-Referer': 'https://openprd.dev',
+          'X-Title': 'OpenPRD'
+        })
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'user', content: codenamPrompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 20
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const codename = data.choices[0].message.content.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `${codename}-prd.md`;
+    }
+  } catch (error) {
+    console.error('Failed to generate codename:', error);
+  }
+  
+  // Fallback to title-based filename
+  const titleSlug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
+  return `${titleSlug || 'untitled'}-prd.md`;
+}
 
 async function callAI(provider: string, model: string, apiKey: string, systemPrompt: string, userInput: string) {
   const providerInfo = AI_PROVIDERS[provider];
