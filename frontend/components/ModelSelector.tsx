@@ -4,8 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, EyeOff, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, RotateCcw, Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import backend from '~backend/client';
 import type { ModelInfo } from './types';
 import { useDebounce } from '../hooks/useDebounce';
@@ -144,6 +146,7 @@ export function ModelSelector({
   const [showSystemInstructions, setShowSystemInstructions] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionError, setConnectionError] = useState('');
+  const [modelSearchOpen, setModelSearchOpen] = useState(false);
   const debouncedApiKey = useDebounce(apiKey, 1000);
 
   const { toast } = useToast();
@@ -204,6 +207,8 @@ export function ModelSelector({
     return text.substring(0, maxLength) + '...';
   };
 
+  const isOpenRouter = selectedProvider === 'openrouter';
+
   return (
     <div className="rounded-xl border border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 p-6 space-y-6 backdrop-blur-sm">
       <div className="grid md:grid-cols-2 gap-4">
@@ -255,18 +260,66 @@ export function ModelSelector({
       {fetchedModels && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Model</label>
-          <Select value={selectedModel} onValueChange={onModelChange} disabled={!fetchedModels}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              {fetchedModels.map((model) => (
-                <SelectItem key={model.name} value={model.name}>
-                  {model.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isOpenRouter && fetchedModels.length > 10 ? (
+            <Popover open={modelSearchOpen} onOpenChange={setModelSearchOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={modelSearchOpen}
+                  className="w-full justify-between"
+                >
+                  {selectedModel || "Select a model..."}
+                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                <Command>
+                  <CommandInput placeholder="Search models..." />
+                  <CommandList className="max-h-[300px]">
+                    <CommandEmpty>No model found.</CommandEmpty>
+                    <CommandGroup>
+                      {fetchedModels.map((model) => (
+                        <CommandItem
+                          key={model.name}
+                          value={model.name}
+                          onSelect={(value) => {
+                            onModelChange(value);
+                            setModelSearchOpen(false);
+                          }}
+                        >
+                          <div className="flex flex-col w-full">
+                            <div className="font-medium">{model.name}</div>
+                            {model.description && (
+                              <div className="text-xs text-stone-600 dark:text-stone-400 truncate">
+                                {model.description}
+                              </div>
+                            )}
+                            <div className="text-xs text-stone-500 dark:text-stone-500">
+                              ${model.inputCostPer1k.toFixed(4)}/${model.outputCostPer1k.toFixed(4)} per 1K tokens
+                            </div>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Select value={selectedModel} onValueChange={onModelChange} disabled={!fetchedModels}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a model" />
+              </SelectTrigger>
+              <SelectContent>
+                {fetchedModels.map((model) => (
+                  <SelectItem key={model.name} value={model.name}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
 
@@ -282,6 +335,12 @@ export function ModelSelector({
               ${selectedModelInfo.inputCostPer1k.toFixed(4)} / ${selectedModelInfo.outputCostPer1k.toFixed(4)} per 1K tokens
             </span>
           </div>
+          {selectedModelInfo.description && (
+            <div className="pt-1">
+              <span className="text-sm font-medium">Description</span>
+              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">{selectedModelInfo.description}</p>
+            </div>
+          )}
         </div>
       )}
 
