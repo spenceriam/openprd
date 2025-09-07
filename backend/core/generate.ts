@@ -211,6 +211,8 @@ export const generate = api<GenerateRequest, GenerateResponse>(
 );
 
 async function generateFilename(prdContent: string, fallbackTitle: string, provider: string, model: string, apiKey: string): Promise<string> {
+  let baseName = '';
+
   // Generate a project name using AI based on the PRD content
   const projectNamePrompt = `Based on the following PRD content, generate a short, descriptive, and file-system-friendly project name.
 
@@ -253,16 +255,29 @@ Rules:
       const data = await response.json();
       const projectName = data.choices[0].message.content.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/\s+/g, '-');
       if (projectName) {
-        return `${projectName}-prd.md`;
+        baseName = projectName;
       }
     }
   } catch (error) {
     console.error('Failed to generate project name:', error);
   }
   
-  // Fallback to title-based filename
-  const titleSlug = fallbackTitle.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
-  return `${titleSlug || 'untitled'}-prd.md`;
+  // Fallback to title-based filename if AI fails
+  if (!baseName) {
+    baseName = fallbackTitle.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
+  }
+
+  // Sanitize baseName to remove any trailing '-prd'
+  if (baseName.endsWith('-prd')) {
+    baseName = baseName.slice(0, -4);
+  }
+
+  // If stripping '-prd' or fallback results in an empty string, use a default.
+  if (!baseName) {
+    baseName = 'untitled';
+  }
+  
+  return `${baseName}-prd.md`;
 }
 
 async function callAI(provider: string, model: string, apiKey: string, systemPrompt: string, userInput: string) {
