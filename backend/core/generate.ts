@@ -122,8 +122,8 @@ export const generate = api<GenerateRequest, GenerateResponse>(
       // Extract title from generated content
       const title = extractTitle(aiResponse.content);
       
-      // Generate filename based on title and input
-      const filename = await generateFilename(title, input, provider, model, apiKey);
+      // Generate filename based on PRD content
+      const filename = await generateFilename(aiResponse.content, title, provider, model, apiKey);
       
       // Save PRD to database using REAL type for cost
       const prdResult = await db.queryRow<{ id: number }>`
@@ -210,25 +210,21 @@ export const generate = api<GenerateRequest, GenerateResponse>(
   }
 );
 
-async function generateFilename(title: string, input: string, provider: string, model: string, apiKey: string): Promise<string> {
-  // Check if user provided a specific name in the input
-  const nameMatch = input.match(/(?:name|title|call|called)\s*(?:it|this|the\s+(?:app|application|project|product))?\s*["\']?([a-zA-Z0-9\s-_]+)["\']?/i);
-  
-  if (nameMatch && nameMatch[1]) {
-    const userProvidedName = nameMatch[1].trim().toLowerCase().replace(/\s+/g, '-');
-    return `${userProvidedName}-prd.md`;
-  }
-  
-  // If no name provided, generate a codename using AI
-  const codenamPrompt = `Generate a single, creative codename for a project based on this description: "${input.substring(0, 200)}". 
+async function generateFilename(prdContent: string, fallbackTitle: string, provider: string, model: string, apiKey: string): Promise<string> {
+  // Generate a project name using AI based on the PRD content
+  const projectNamePrompt = `Based on the following PRD content, generate a short, descriptive, and file-system-friendly project name.
+
+PRD Content:
+---
+${prdContent.substring(0, 1000)}
+---
 
 Rules:
-- Return ONLY the codename, nothing else
-- 1-2 words maximum
-- Use animals, space objects, or tech terms
-- Make it memorable and relevant
-- Examples: falcon, nebula, atlas, phoenix
-- Lowercase, no spaces or special characters`;
+- Return ONLY the project name, nothing else.
+- 2-4 words maximum.
+- The name should be relevant to the project described in the PRD.
+- Use lowercase letters and hyphens instead of spaces.
+- Examples: "online-bookstore", "fitness-tracker-app", "recipe-sharing-platform"`;
 
   try {
     const providerInfo = AI_PROVIDERS[provider];
@@ -246,24 +242,26 @@ Rules:
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'user', content: codenamPrompt }
+          { role: 'user', content: projectNamePrompt }
         ],
-        temperature: 0.9,
+        temperature: 0.7,
         max_tokens: 20
       })
     });
     
     if (response.ok) {
       const data = await response.json();
-      const codename = data.choices[0].message.content.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      return `${codename}-prd.md`;
+      const projectName = data.choices[0].message.content.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/\s+/g, '-');
+      if (projectName) {
+        return `${projectName}-prd.md`;
+      }
     }
   } catch (error) {
-    console.error('Failed to generate codename:', error);
+    console.error('Failed to generate project name:', error);
   }
   
   // Fallback to title-based filename
-  const titleSlug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
+  const titleSlug = fallbackTitle.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
   return `${titleSlug || 'untitled'}-prd.md`;
 }
 
