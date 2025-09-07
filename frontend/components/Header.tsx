@@ -1,4 +1,4 @@
-import { Moon, Sun, ArrowLeft, FileText } from 'lucide-react';
+import { Moon, Sun, ArrowLeft, FileText, Github, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
@@ -25,7 +25,19 @@ export function Header({ theme, onToggleTheme, onBackToHome }: HeaderProps) {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <a href="https://x.com/spencer_i_am" target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Twitter className="h-4 w-4" />
+              <span className="sr-only">X.com Profile</span>
+            </Button>
+          </a>
+          <a href="https://github.com/spenceriam/openprd" target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Github className="h-4 w-4" />
+              <span className="sr-only">GitHub Repository</span>
+            </Button>
+          </a>
           <Button
             variant="ghost"
             size="icon"
